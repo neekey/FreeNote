@@ -1,3 +1,7 @@
+/** 
+ * 封装数据操作
+ */
+
 var Mgo = require( './mongoModel' ),
 	_ = require( 'underscore' ),
 	Muser = Mgo.model( 'user' );
@@ -72,6 +76,12 @@ var handle = {
 
 		}
 	},
+
+	/**
+	 * mongoDB 不允许一次对同一路劲下的数据进行不同类型的操作
+	 * 在修改笔记的操作中，涉及到添加新的tag和修改旧的tag的操作
+	 * 因此这边分成两部，先save，再执行下一步
+	 */
 
 	/**
 	 * 修改笔记
