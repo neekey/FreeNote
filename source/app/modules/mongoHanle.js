@@ -23,24 +23,31 @@ handle = {
 };
 var Muser = Mgo.model( 'user' );
 
+// TEST: addUser
 var user = new Muser({
 	name: String( Date.now() ),
 	password: 'test'
-});
-user.tags.push({ value: String( Date.now() )});
-user.addNote({
-	content: String( Date.now() ),
-	tags: [ 'drinking' ]
 });
 
 console.log( 'user added!' );
 console.log( user );
 
-console.log( 'del note' );
-user.delNote( user.notes[ 0 ]._id );
+// TEST: addNote
+user.addNote({
+	content: String( Date.now() ),
+	tags: [ 'neekey' ]
+});
 
-console.log( 'note deleted!' );
-console.log( user.tags );
+console.log( 'note added!' );
+console.log( user );
+
+// TEST: updateNote
+user.updateNote( user.notes[ 0 ]._id, {
+	content: 'update Note!',
+	tags: [ 'neekey', 'test' ]
+});
+
+console.log( 'note updated!' );
 console.log( user );
 
 user.save( function( err ){

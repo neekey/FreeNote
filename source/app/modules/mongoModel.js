@@ -18,7 +18,8 @@ var Snote = new schema({
 
 // tag
 Stag = new schema({
-	value: { type: String, required: true, unique: true },
+	// 代码维护其唯一性
+	value: { type: String, required: true },
 	notes: [ String ]
 }),
 
@@ -32,16 +33,22 @@ Suser = new schema({
 
 /* define schema method */
 
-// add note
+/**
+ * add note
+ * @param {Object} note
+ * @returns {id|Boolean} 成功返回新插入的note对象_id值，否则返回false
+ */
 Suser.methods.addNote = function( note ){
-	if( !note.content ){
+	if( !note.content || !_.isString( note.content ) ){
 		return false;
 	}
 	else {
 		var newNote = { content: note.content },
 			that = this;
 
-		if( note.tags ){
+		if( note.tags && _.isArray( note.tags ) ){
+			// 删除重复
+			note.tags = _.uniq( note.tags );
 			newNote.tags = note.tags; 
 		}
 
@@ -56,26 +63,56 @@ Suser.methods.addNote = function( note ){
 				that.addTagNote( tag, newNote._id );
 			});
 		}
-		return true;
+		return newNote._id;
 	}
 };
 
-// update note
+/**
+ * update note
+ * @param {id} id
+ * @param {Object} update
+ * @returns {Boolean}
+ */
 Suser.methods.updateNote = function( id, update ){
-	var note = this.notes.id( id ), tags, i;
+	var note = this.notes.id( id ), 
+		that = this,
+		tags, oldTags, newTags, delTags, i;
+
 	if( note ){
-		if( update.content ){
+		if( update.content && _.isString( update.content ) ){
 			note.content = update.content;
 		}
-		if( update.tags ){
+		if( update.tags && _.isArray( update.tags ) ){
+			// 删除重复
+			update.tags = _.uniq( update.tags );
+
+			oldTags = note.tags;
 			note.tags = update.tags;
+
+			// update tags info
+			newTags = _.difference( update.tags, oldTags );
+			delTags = _.difference( oldTags, update.tags );
+
+			// add new tags info
+			_.each( newTags, function( tag ){
+				that.addTagNote( tag, id );
+			});
+
+			// remove new tags info
+			_.each( delTags, function( tag ){
+				that.delTagNote( tag, id );
+			});
 		}
 		return true;
 	}
 	return false;
 };
 
-// delete note
+/**
+ * delete note
+ * @param {id} id
+ * @returns {Boolean}
+ */
 Suser.methods.delNote = function( id ){
 	var note = this.notes.id( id ), 
 		that = this, tags;
@@ -93,7 +130,11 @@ Suser.methods.delNote = function( id ){
 	return false;
 };
 
-// get tag by tagName
+/**
+ * get tag by tagName
+ * @param {String} name
+ * @returns {Object|boolean} 成功返回tag对象，否则为false
+ */
 Suser.methods.getTagByName = function( name ){
 	var tag = _.select( this.tags, function( tag ){
 		return tag.value === name;
@@ -105,18 +146,31 @@ Suser.methods.getTagByName = function( name ){
 	return false;
 };
 
-// add tag
+/**
+ * add tag
+ * @param {String} tag
+ * @returns {Boolean}
+ */
 Suser.methods.addTag = function( tag ){
-	if( _.indexOf( this.tags, tag ) >= 0 ){
+	
+	if( !_.isString( tag ) ){
 		return false;
 	}
-	else {
-		this.tags.push({ value: tag });
-		return true;
+
+	var tagObj = this.getTagByName( tag );
+	if( tag ){
+		return false;
 	}
+
+	this.tags.push({ value: tag });
+	return _.last( this.tags )._id;
 };
 
-// delete tag
+/**
+ * delete tag
+ * @param {id} id
+ * @returns {Boolean}
+ */
 Suser.methods.delTagById = function( id ){
 	var tag = this.tags.id( id );
 	if( tag ){
@@ -126,7 +180,17 @@ Suser.methods.delTagById = function( id ){
 	return false;
 };
 
+/**
+ * delete tag
+ * @param {String} t 
+ * @returns {Boolean}
+ */
 Suser.methods.delTagByName = function( t ){
+
+	if( !_.isString( t ) ){
+		return false;
+	}
+
 	var tag = this.getTagByName( t );
 	if( tag !== false ){
 		tags.remove();
@@ -135,8 +199,14 @@ Suser.methods.delTagByName = function( t ){
 	return false;
 };
 
-// add tag-note
+/**
+ * add tag-note
+ * @param {String} t -tag name
+ * @param {id} id -note id
+ * @returns {Boolean}
+ */
 Suser.methods.addTagNote = function( t, id ){
+
 	var tag = this.getTagByName( t ),
 		note = this.notes.id( id );
 
@@ -157,19 +227,23 @@ Suser.methods.addTagNote = function( t, id ){
 
 	tag.notes.push( id );
 
-	console.log( this.tags );
 	return true;
 };
 
-// del tag-note
+/**
+ * delete tag-note
+ * @param {String} t -tag name
+ * @param {id} id -note id
+ * @returns {Boolean}
+ */
 Suser.methods.delTagNote = function( t, id ){
+
 	var tag = this.getTagByName( t ), noteIndex;
-	console.log( 'del -tag-note');
-	console.log( tag );
+
 	if( tag !== false ){
+
 		noteIndex = _.indexOf( tag.notes, String( id ) );
-		console.log( 'noteIndex' );
-		console.log( noteIndex );
+
 		if( noteIndex >= 0 ){
 			tag.notes.splice( noteIndex, 1 );
 			return true;
