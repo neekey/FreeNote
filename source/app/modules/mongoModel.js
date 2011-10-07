@@ -246,4 +246,3 @@ Suser.methods.delTagNote = function( t, id ){
 mongoose.model( 'user', Suser );
 
 module.exports = mongoose;
-
