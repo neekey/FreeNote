@@ -81,6 +81,8 @@ Suser.methods.updateNote = function( id, update ){
 	if( note ){
 		if( update.content && _.isString( update.content ) ){
 			note.content = update.content;
+
+			note.updated = Date.now();
 		}
 		if( update.tags && _.isArray( update.tags ) ){
 			// 删除重复
@@ -102,6 +104,8 @@ Suser.methods.updateNote = function( id, update ){
 			_.each( delTags, function( tag ){
 				that.delTagNote( tag, id );
 			});
+
+			note.updated = Date.now();
 		}
 		return true;
 	}
@@ -158,7 +162,7 @@ Suser.methods.addTag = function( tag ){
 	}
 
 	var tagObj = this.getTagByName( tag );
-	if( tag ){
+	if( tagObj ){
 		return false;
 	}
 

@@ -1,7 +1,7 @@
 var express = require( 'express' ),
 	app = express.createServer(),
 	noteHandle = require( './modules/noteHandle' ),
-	mongodb = require( './modules/mongoHanle' ).mongodb;
+	mongodb = require( './modules/mongoHandle' ).mongodb;
 
 // 设置渲染引擎
 require( 'jade' );
