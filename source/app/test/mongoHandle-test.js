@@ -22,7 +22,7 @@ Mh.addUser( String( Date.now() ), 'ps', function( err, user ){
 			}
 			else {
 				console.log( '==================== note added: ' );
-				console.log( user.notes.id( id ) );
+				console.log( id );
 
 				// TEST: updateNote
 				var uptNote = {
@@ -37,7 +37,36 @@ Mh.addUser( String( Date.now() ), 'ps', function( err, user ){
 					}
 					else {
 						console.log( '==================== note updated!' );
-						console.log( user );
+
+						// TEST: getUser
+						Mh.getUser( user.name, function( err, u ){
+							if( err ){
+								console.log( err );
+							}
+							else {
+								console.log( u );
+								console.log( u.notes );
+							}
+						});
+
+						// TEST: delNote
+						Mh.delNote( user.name, id, function( err ){
+							if( err ){
+								console.log( err );
+							}
+							else {
+								Mh.getUser( user.name, function( err, u ){
+									if( err ){
+										console.log( err );
+									}
+									else {
+										console.log( '=================== note deleted! ' );
+										console.log( u );
+									}
+								});
+							}
+						});
+						
 					}
 				
 				});

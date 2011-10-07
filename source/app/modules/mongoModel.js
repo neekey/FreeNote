@@ -86,25 +86,8 @@ Suser.methods.updateNote = function( id, update ){
 		}
 		if( update.tags && _.isArray( update.tags ) ){
 			// 删除重复
-			update.tags = _.uniq( update.tags );
-
-			oldTags = note.tags;
-			note.tags = update.tags;
-
-			// update tags info
-			newTags = _.difference( update.tags, oldTags );
-			delTags = _.difference( oldTags, update.tags );
-
-			// add new tags info
-			_.each( newTags, function( tag ){
-				that.addTagNote( tag, id );
-			});
-
-			// remove new tags info
-			_.each( delTags, function( tag ){
-				that.delTagNote( tag, id );
-			});
-
+			note.tags = _.uniq( update.tags );
+			// 更新时间
 			note.updated = Date.now();
 		}
 		return true;
@@ -123,12 +106,14 @@ Suser.methods.delNote = function( id ){
 
 	if( note ){
 		tags = note.tags;
-		note.remove();
 
 		// remove records from tags
 		_.each( tags, function( tag ){
 			that.delTagNote( tag, id );
 		});
+
+		note.remove();
+
 		return true;
 	}
 	return false;

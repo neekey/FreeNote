@@ -4,6 +4,13 @@ var Mgo = require( './mongoModel' ),
 
 var handle = {
 
+	/**
+	 * 获取用户
+	 */
+	getUser: function( name, next ){
+		Muser.findOne( { name: name }, next );
+	},
+
 	/** 
 	 * 添加用户
 	 */
@@ -70,6 +77,7 @@ var handle = {
 	 * 修改笔记
 	 */
 	updateNote: function( username, id, note, next ){
+
 		if( _.isObject( username ) && username._id ){
 			var user = username;
 			updateNote( user, id, note, next );
@@ -85,14 +93,35 @@ var handle = {
 
 		function updateNote( user, id, note, next ){
 
-			var uptRes = user.updateNote( id, note );
+			var oldTags = user.notes.id( id ).tags,
+				uptRes = user.updateNote( id, note );
+
+			// update tags info 
+			// newTags: 新添加的tag
+			// delTags: 被移除的tag
+			var newTags = _.difference( note.tags, oldTags ),
+				delTags = _.difference( oldTags, note.tags );
+
+			// remove new tags info
+			_.each( delTags, function( tag ){
+				user.delTagNote( tag, id );
+			});
 
 			if( uptRes === false ){
 				next( { err: 'note updating failed!' } );
 			}
 			else {
 				user.save( function( err ){
-					next( err );
+					
+					// add new tags info
+					_.each( newTags, function( tag ){
+						user.addTagNote( tag, id );
+					});
+
+					user.save( function( err ){
+						next( err );
+					});
+
 				});
 			}
 		}
