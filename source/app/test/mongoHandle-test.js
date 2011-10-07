@@ -15,15 +15,32 @@ Mh.addUser( String( Date.now() ), 'ps', function( err, user ){
 		};
 
 		// TEST: addNote
-		Mh.addNote( user, newNote, function( err, id ){
+		Mh.addNote( user.name, newNote, function( err, id ){
 			if( err ){
+				console.log( '==================== note adding failed!' );
 				console.log( err );
 			}
 			else {
-				console.log( 'user' );
-				console.log( user );
-				console.log( 'note added: ' );
+				console.log( '==================== note added: ' );
 				console.log( user.notes.id( id ) );
+
+				// TEST: updateNote
+				var uptNote = {
+					content: 'updated note',
+					tags: [ 'c', 'd' ]
+				};
+				Mh.updateNote( user.name, id, uptNote, function( err ){
+					
+					if( err ){
+						console.log( '==================== note updated failed!' );
+						console.log( err );
+					}
+					else {
+						console.log( '==================== note updated!' );
+						console.log( user );
+					}
+				
+				});
 			}
 		});
 	}
