@@ -5,14 +5,14 @@
 
 !function( app ){
 	
-	var Mtag = Backbone.Model.extend({
+	var Mtag = app.models.tag =  Backbone.Model.extend({
 		defaults: {
 			'value': '',
 			'notes': []
 		}
 	}),
 
-	Mnote = Backbone.Model.extend({
+	Mnote = app.models.note = Backbone.Model.extend({
 		defaults: {
 			'content': '',
 			'tags': [],
@@ -21,7 +21,7 @@
 		}
 	}),
 
-	CLtag = Backbone.Collection.extend({
+	CLtag = app.collections.tag = Backbone.Collection.extend({
 
 		model: Mtag,
 
@@ -30,7 +30,7 @@
 		}
 	}),
 
-	CLnote = Backbone.Collection.extend({
+	CLnote = app.collections.note = Backbone.Collection.extend({
 
 		model: Mnote,
 
@@ -38,12 +38,15 @@
 		}
 	}),
 
-	Muser = Backbone.Model.extend({
+	Muser = app.models.user = Backbone.Model.extend({
 		defaults: {
 			'name': '',
 			'password': ''
-		}
+		},
+
+		urlRoot: '/res/user/'
 	});
+
 
 }( window[ 'freenote' ] );
  

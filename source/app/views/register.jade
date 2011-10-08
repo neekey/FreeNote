@@ -1,37 +1,10 @@
-!!!5
-html( lang="cn" )
-	head
-		title FreeNote
-		meta( charset="utf-8" )
-		link( rel="stylesheet", type="text/css", href="/index.css" )
-		script( src="/core/underscore.js" )
-		script( src="/core/jquery.js" )
-		script( src="/core/backbone.js" )
-		script( src="/localstorage.js" )
-		script( src="/config.js" )
-		script( src="/models/user.js" )
-		script( src="/register.js" )
-	body
-		#header
-		#content
-			.note-stage
-				ul.note-list
-			.note-handle
-				.note-add-con
-					input#ipt-new( type="text", placeholder="要添加的笔记内容" )
-					input#sbmt-new( type="submit", value="添加" )
-				.note-update-con
-					input#ipt-update( type="text", placeholder="更新您的笔记" )
-					input#ipt-update-id( type="text", placeholder="需要更新的笔记id" )
-					input#sbmt-update( type="submit", value="更新" )
-				.note-del-con
-					input#ipt-del( type="text", placeholder="需要删除的笔记id" )
-					input#sbmt-del( type="submit", value="删除" )
-				.note-read-con
-					input#ipt-read( type="text", placeholder="需要获取的笔记id" )
-					input#sbmt-read( type="submit", value="获取" )
-
-			.note-cmd
-		#footer
-			.note-update-con
+body
+	#header
+	#content
+		label 用户名
+		input( type="text" )#J_username
+		label 密码
+		input( type="password" )#J_password
+		input( type="button", value="注册" )#J_register
+	#footer
 

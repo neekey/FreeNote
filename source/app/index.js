@@ -1,7 +1,7 @@
 var express = require( 'express' ),
 	app = express.createServer(),
 	noteHandle = require( './modules/noteHandle' ),
-	mongodb = require( './modules/mongoHandle' ).mongodb;
+	Mh = require( './modules/mongoHandle' );
 
 // 设置渲染引擎
 require( 'jade' );
@@ -50,6 +50,19 @@ app.post( '/res/note/', function( req, res ){
 		res.send( { id: results.insertId } );
 	});
 });
+// create user
+app.post( '/res/user/', function( req, res ){
+	var data = req.body;
+	Mh.addUser( data.name, data.password, function( err, user ){
+		if( err ){
+			res.send( 404, err );
+		}
+		else {
+			res.send({ _id: user._id });
+		}
+	});
+});
+
 // update
 app.put( '/res/note/:id', function( req, res ){
 	var id = req.params.id,
