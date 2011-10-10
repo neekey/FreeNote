@@ -11,11 +11,23 @@ $( document ).ready(function(){
 
 	var CLnote = Backbone.Collection.extend({
 		model: Mnote,
-		url: 'res/note/',
+		url: 'res/user/neekey/note/',
 		initialize: function(){
 			this.bind( 'add', function( m ){
 				new Vnote({ model: m });
 			});
+
+			this._fetch = this.fetch;
+			this.fetch = function( options, queryObj ){
+				var _url = this.url;
+
+				if( queryObj ){
+					this.url = this.url + '?' + $.param( queryObj );
+				}
+				this._fetch( options );
+
+				this.url = _url;
+			};
 		}
 	});
 
@@ -37,7 +49,7 @@ $( document ).ready(function(){
 	});
 	
 	var CLnoteList = new CLnote;
-	CLnoteList.fetch({ add: true });
+	CLnoteList.fetch({ add: true }, { name: 'neekey' } );
 	var VnoteHanle = new ( Backbone.View.extend({
 		
 		el: $( '#content .note-handle' ),

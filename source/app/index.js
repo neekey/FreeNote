@@ -1,12 +1,18 @@
 var express = require( 'express' ),
 	app = express.createServer(),
 	noteHandle = require( './modules/noteHandle' ),
-	Mh = require( './modules/mongoHandle' );
+	ajaxCheck = require( './modules/ajaxCheck.js' ),
+	Mh = require( './modules/mongoHandle' ),
+	router = require( './modules/appRouter' );
+
 
 // 设置渲染引擎
 require( 'jade' );
 app.set( 'view engine', 'jade' );
 app.use( express.bodyParser() );
+
+// 初始化路由
+router.init( app );
 
 // js+css files
 app.get( '/*.(js|css)', function( req, res ){
@@ -26,6 +32,12 @@ app.get( '/', function( req, res ){
 /* CRUD router */
 
 // read
+router.on( 'getNotes', function( req, res, data ){
+	noteHandle.search( function( results ){
+		res.send( results );
+	});
+
+});
 app.get( '/res/note/:id', function( req, res ){
 	var id = req.params.id;
 	console.log( 'id: ' + id );
@@ -38,11 +50,7 @@ app.get( '/res/note/:id', function( req, res ){
 		}
 	});
 });
-app.get( '/res/note/', function( req, res ){
-	noteHandle.search( function( results ){
-		res.send( results );
-	});
-});
+
 // create
 app.post( '/res/note/', function( req, res ){
 	var data = req.body;
