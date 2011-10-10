@@ -19,12 +19,39 @@ var handle = {
 	 * 更新session
 	 */
 	update: function( name, session, next ){
+		
+
 		Muser.findOne( { name: name }, function( err, user ){
 			if( err ){
 				console.log( err );
 			}
 			else {
-				user.updateSession( session, next );
+				var news = {}, olds = {}, 
+					keys = _.keys( session ), i, hasNew = false;
+				
+				for( i = 0; keys[ i ]; i++ ){
+					if( keys[ i ] in user.sessions ){
+						olds[ keys[ i ] ] = se[ keys[ i ] ];
+					}
+					else {
+						news[ keys[ i ] ] = se[ keys[ i ] ];
+						hasNew = true;
+					}
+				}
+
+				// 先修改已经有的
+				user.updateSession( olds );
+				user.save( function( err ){
+					if( err ){
+						console.log( err );
+					}
+
+					// 若又新的数据，则添加
+					if( hasNew ){
+						user.updateSession( news );
+						user.save( next );
+					}
+				});
 			}
 		});
 	},
@@ -39,7 +66,8 @@ var handle = {
 				console.log( err );
 			}
 			else {
-				user.delSession( serial, next );
+				user.delSession( serial );
+				user.save( next );
 			}
 		});
 	},
@@ -53,7 +81,8 @@ var handle = {
 				console.log( err );
 			}
 			else {
-				user.delAllSession( next );
+				user.delAllSession();
+				user.save( next );
 			}
 		});
 	}
