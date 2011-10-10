@@ -243,6 +243,42 @@ Suser.methods.delTagNote = function( t, id ){
 	return false;
 };
 
+/**
+ * 更新session数据
+ * @param {Session} se
+ */
+Suser.methods.updateSession = function( se ){
+	var news = {}, olds = {}, 
+		keys = _.keys( se ), i, hasNew = false;
+	
+	for( i = 0; keys[ i ]; i++ ){
+		if( keys[ i ] in this.sessions ){
+			olds[ keys[ i ] ] = se[ keys[ i ] ];
+		}
+		else {
+			news[ keys[ i ] ] = se[ keys[ i ] ];
+			hasNew = true;
+		}
+	}
+
+	// 新更新已经存在的
+	_.extend( this.sessions, olds );
+};
+
+/**
+ * 删除指定的登陆序列
+ * @param {String} serial
+ */
+Suser.methods.delSession = function( serial ){
+	delete this.sessions[ serial ];
+};
+
+/**
+ * 清空用户的session数据
+ */
+Suser.methods.delAllSession = function(){
+	this.sessions = {};
+};
 
 mongoose.model( 'user', Suser );
 
