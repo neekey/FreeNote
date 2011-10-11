@@ -2,6 +2,8 @@
  * 内存中的session信息
  */
 var _ = require( 'underscore' ),
+	
+	Msh = require( './mongoSessionHandle' ),
 
 // 过期时间（查过这个时间session将从内存中销毁）
 Expire = 30,
@@ -91,17 +93,31 @@ handle = {
 	 * @param {String} serial
 	 * @returns {Session|Boolean} 
 	 */
-	getSession: function( name, serial ){
-		var u = session[ name ], s;
+	getSession: function( name, serial, next ){
+		var u = session[ name ], s, that = this;
 
 		if( u ){
 			s = u[ serial ];
 			if( s ){
-					return s;
+					next( null, s );
 			}
 		}
 		else {
-			return false;
+
+			// 从数据库中获取session数据
+			Msh.get( name, function( err, user ){
+				if( err ){
+					next( err );
+				}
+				else {
+					var s = user.sessions[ serial ];
+					if( s ){
+						// 将数据导入到内存中
+						that.importSerial( name, serial, s.token );
+						next( null, { token: s.token } );
+					}
+				}
+			});
 		}
 	},
 
@@ -133,15 +149,59 @@ handle = {
 	},
 
 	/**
-	 * 销毁session
-	 * @param {String} name
-	 * @param {String} serial
+	 * 从内存中删除session
 	 */
-	destroy: function( name, serial ){
+	del: function( name, serial ){
 		var u = session[ name ];
 
 		if( u ){
 			delete u[ serial ];
 		}
+	},
+
+	/**
+	 * 销毁session, 从内存和数据库中同时删除数据
+	 * @param {String} name
+	 * @param {String} serial
+	 */
+	destroy: function( name, serial, next ){
+
+		// 从内存中删除
+		this.del( name, serial );
+
+		// 从数据库中删除
+		Msh.del( name, serial, next );
+	},
+
+	/**
+	 * 将session信息保存到数据库中
+	 */
+	save: function( name, serial, next ){
+		
+		var u = session[ name ], s, newS;
+
+		if( u ){
+			s = u[ serial ];
+			
+			if( s ){
+				newS = {};
+				newS[ serial ] = s.token;
+				Msh.save( name, newS, next ); 
+			}
+			else {
+				next({
+					type: 'save',
+					msg: 'serial: ' + serial + '不存在'
+				});
+			}
+		}
+		else {
+			next({
+				type: 'save',
+				msg: '用户名: ' + name + '不存在'
+			});
+		}
 	}
 };
+
+module.exports = handle;

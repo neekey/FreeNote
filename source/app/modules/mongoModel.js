@@ -27,7 +27,7 @@ Stag = new schema({
 Suser = new schema({
 	name: { type: String, required: true, unique: true },
 	password: { type: String, required: true },
-	sessions: { type: Object },
+	sessions: {},
 	notes: [ Snote ],
 	tags: [ Stag ] 
 });

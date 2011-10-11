@@ -12,7 +12,22 @@ var handle = {
 	 * 获取用户
 	 */
 	getUser: function( name, next ){
-		Muser.findOne( { name: name }, next );
+		Muser.findOne( { name: name }, function( err, user ){
+			if( err ){ 
+				next( err );
+			}
+			else {
+				if( !user ){
+					next( {
+						type: 'getUser',
+						msg: '用户名: ' + name + ' 不存在' 
+					});
+				}
+				else {
+					next( null, user );
+				}
+			}
+		});
 	},
 
 	/** 
