@@ -6,6 +6,11 @@ var express = require( 'express' ),
 	router = require( './modules/appRouter' );
 
 
+Mh.getUser( 'neekey', function( err, user ){
+	console.log( 'get user test' );
+	console.log( err );
+	console.log( user );
+});
 // 设置渲染引擎
 require( 'jade' );
 app.set( 'view engine', 'jade' );
