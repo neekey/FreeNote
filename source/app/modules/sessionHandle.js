@@ -1,11 +1,8 @@
 /**
  * 内存中的session信息
  */
-var _ = require( 'underscore' ),
-	
-	Msh = require( './mongoSessionHandle' ),
-
-	crypto = require('crypto'),
+var Msh = require( './mongoSessionHandle' ),
+    crypto = require('crypto'),
 
 // 过期时间（查过这个时间session将从内存中销毁）
 Expire = 30,
@@ -18,16 +15,20 @@ handle = {
 	/**
 	 * 导入serial数据
 	 */
-	importSerial: function( name, serail, token ){
+	importSerial: function( name, serial, token ){
 		if( !( name in session ) ){
 			session[ name ] = {};
 		}
-
+        if( !( serial in session[ name ] )){
+            session[ name ][ serial] = {};
+        }
 		session[ name ][ serial ][ 'token' ] = token;
 	},
 
 	/**
-	 * 生成新的serial	 
+	 * 生成新的serial
+     * @params {String} name username
+     * @params {Object} serial object
 	 */
 	addSerial: function( name ){
 
@@ -47,63 +48,93 @@ handle = {
 			serial: serial,
 			token: s.token
 		};
-
 	},
 
-	/**
-	 * 修改	session
-	 * @param {String} name
-	 * @param {String} serial
-	 * @returns {String} token
-	 */
-	updateToken: function( name, serial ){
-		var u = session[ name ], s;
-		if( u ){
-			s = u[ serial ];
-			if( s ){
-				s.token = this.newToken( name, serial );
-				this.updateActive( name, serial );
-				return s.token;
-			}
-		}
+    /**
+     * update session token and active date
+     * @param name
+     * @param serial
+     * @param next( err, s )
+     */
+    updateSession: function( name, serial, next ){
+        var that = this;
+        this.getSession( name, serial, function( err, s ){
+            if( err ){
+                next( err );
+            }
+            else {
+                s.token = that.newToken( name, serial );
+                s.active = Date.now();
+                clearTimeout( s.timer );
+
+                // 设置超时
+                s.timer = setTimeout( function(){
+                    that.destroy( name, serial );
+                }, Expire * 60 * 1000 );
+
+                next( null, s );
+            }
+        });
+    },
+
+    /**
+     * update session[ serial ] token
+     * @param name
+     * @param serial
+     * @param next( err, session[ serial ] )
+     */
+	updateToken: function( name, serial, next ){
+        var that = this;
+        this.getSession( name, serial, function( err, s ){
+            if( err ){
+                next( err );
+            }
+            else {
+                s.token = that.newToken( name, serial );
+                next( null, s );
+            }
+        });
 	},
 
-	/**
-	 * 更新session的活跃时间
-	 * @param {String} name
-	 * @param {String} serial
-	 */
-	updateActive: function( name, serial ){
-		var u = session[ name ], s, that = this;
-		if( u ){
-			s = u[ serial ];
-			if( s ){
-				s.active = Date.now();
+    /**
+     * update session[ serial ] active date
+     * @param name
+     * @param serial
+     * @param next( err, session[ serial ] )
+     */
+	updateActive: function( name, serial, next ){
+		var that = this;
+        this.getSession( name, serial, function( err, s ){
+            if( err ){
+                next( err );
+            }
+            else {
+                s.active = Date.now();
 				clearTimeout( s.timer );
 
 				// 设置超时
 				s.timer = setTimeout( function(){
 					that.destroy( name, serial );
 				}, Expire * 60 * 1000 );
-			}
-		}
+
+                next( null, s );
+            }
+        });
 	},
 
 
-	/**
-	 * 获取指定的session数据
-	 * @param {String} name
-	 * @param {String} serial
-	 * @returns {Session|Boolean} 
-	 */
+    /**
+     * get session[ serial ], if not in memory, it will check mongdb, which also fetch the data into memory
+     * @param name
+     * @param serial
+     * @param next( err, session[ serial ] )
+     */
 	getSession: function( name, serial, next ){
 		var u = session[ name ], s, that = this;
 
-		if( u ){
+		if( u && u[ serial ] ){
 			s = u[ serial ];
-			if( s ){
-					next( null, s );
-			}
+			next( null, s );
 		}
 		else {
 
@@ -118,7 +149,7 @@ handle = {
 						if( s ){
 							// 将数据导入到内存中
 							that.importSerial( name, serial, s.token );
-							next( null, { token: s.token } );
+							next( null, session[ name ][ serial ] );
 						}
 						next( null );
 					}
@@ -130,36 +161,11 @@ handle = {
 		}
 	},
 
-	/**
-	 * 检查会在内存中是否过期，如果过期，则销毁	 
-	 * @param {String} name
-	 * @param {String} serial
-	 * @returns {Boolean}
-	 */
-	ifExpired: function( name, serial ){
-		var u = session[ name ], s,
-			curTime = Date.now();
-
-		if( u ){
-			s = u[ serial ];
-			if( s ){
-				if( curTime - s.active > ( Expire * 60 * 1000 ) ){
-					this.destroy( name, serial );
-					return true;
-				}
-				else {
-					return false;
-				}
-			}
-		}
-		else {
-			return true;
-		}
-	},
-
-	/**
-	 * 从内存中删除session
-	 */
+    /**
+     * delete session[ serial ] from memory
+     * @param name
+     * @param serial
+     */
 	del: function( name, serial ){
 		var u = session[ name ];
 
@@ -168,11 +174,12 @@ handle = {
 		}
 	},
 
-	/**
-	 * 销毁session, 从内存和数据库中同时删除数据
-	 * @param {String} name
-	 * @param {String} serial
-	 */
+    /**
+     * delete session from both memory and mongodb
+     * @param name
+     * @param serial
+     * @param next
+     */
 	destroy: function( name, serial, next ){
 
 		// 从内存中删除
@@ -182,9 +189,12 @@ handle = {
 		Msh.del( name, serial, next );
 	},
 
-	/**
-	 * 将session信息保存到数据库中
-	 */
+    /**
+     * save session[ serial ] from memory to mongodb
+     * @param name
+     * @param serial
+     * @param next
+     */
 	save: function( name, serial, next ){
 		
 		var u = session[ name ], s, newS;
@@ -193,8 +203,11 @@ handle = {
 			s = u[ serial ];
 			
 			if( s ){
-				newS = {};
-				newS[ serial ] = s.token;
+
+				newS = {
+                    serial: s.token
+                };
+
 				Msh.save( name, newS, next ); 
 			}
 			else {
@@ -212,6 +225,11 @@ handle = {
 		}
 	},
 
+    /**
+     * create an encrypted serial
+     * @param name
+     * @return {String}
+     */
 	newSerial: function( name ){
 		var curDateStr = ( new Date ).toString(),
 			curDate = String( Date.now() );
@@ -222,6 +240,12 @@ handle = {
 		return SHA.digest();
 	},
 
+    /**
+     * create an encrypted token
+     * @param name
+     * @param serial
+     * @return {String}
+     */
 	newToken: function( name, serial ){
 		var curDateStr = ( new Date ).toString(),
 			curDate = String( Date.now() );

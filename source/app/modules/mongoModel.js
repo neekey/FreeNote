@@ -3,7 +3,6 @@
  * @Author neekey<ni184775761@gmail.com>
  */
 var mongoose = require('./mongoConf'),
-	_ = require('underscore'),
 	schema = mongoose.Schema;
 
 /* define schema */
@@ -248,21 +247,7 @@ Suser.methods.delTagNote = function( t, id ){
  * @param {Session} se
  */
 Suser.methods.updateSession = function( se ){
-	var news = {}, olds = {}, 
-		keys = _.keys( se ), i, hasNew = false;
-	
-	for( i = 0; keys[ i ]; i++ ){
-		if( keys[ i ] in this.sessions ){
-			olds[ keys[ i ] ] = se[ keys[ i ] ];
-		}
-		else {
-			news[ keys[ i ] ] = se[ keys[ i ] ];
-			hasNew = true;
-		}
-	}
-
-	// 新更新已经存在的
-	_.extend( this.sessions, olds );
+	_.extend( this.sessions, se );
 };
 
 /**

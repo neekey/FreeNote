@@ -3,7 +3,6 @@
  */
 
 var Mgo = require( './mongoModel' ),
-	_ = require( 'underscore' ),
 	Muser = Mgo.model( 'user' );
 
 var handle = {
@@ -24,10 +23,9 @@ var handle = {
 					});
 				}
 				else {
-					next( null, user );
+					next( null, user.sessions );
 				}
 			}
-
 		});
 	},
 
@@ -55,10 +53,10 @@ var handle = {
 					
 					for( i = 0; keys[ i ]; i++ ){
 						if( keys[ i ] in user.sessions ){
-							olds[ keys[ i ] ] = se[ keys[ i ] ];
+							olds[ keys[ i ] ] = session[ keys[ i ] ];
 						}
 						else {
-							news[ keys[ i ] ] = se[ keys[ i ] ];
+							news[ keys[ i ] ] = session[ keys[ i ] ];
 							hasNew = true;
 						}
 					}
@@ -69,12 +67,13 @@ var handle = {
 						if( err ){
 							next( err );
 						}
-
-						// 若又新的数据，则添加
-						if( hasNew ){
-							user.updateSession( news );
-							user.save( next );
-						}
+                        else {
+                            // 若又新的数据，则添加
+                            if( hasNew ){
+                                user.updateSession( news );
+                                user.save( next );
+                            }
+                        }
 					});
 				}
 			}
