@@ -5,6 +5,8 @@ var _ = require( 'underscore' ),
 	
 	Msh = require( './mongoSessionHandle' ),
 
+	crypto = require('crypto'),
+
 // 过期时间（查过这个时间session将从内存中销毁）
 Expire = 30,
 
@@ -34,11 +36,12 @@ handle = {
 		}
 
 		var u  = session[ name ],
-			serial = this.getSerial( name ),
+			serial = this.newSerial( name ),
 			s = u[ serial ] = {};
 
 		// 更新
 		this.updateActive( name, serial );
+		this.updateToken( name, serial );
 
 		return {
 			serial: serial,
@@ -71,7 +74,7 @@ handle = {
 	 * @param {String} serial
 	 */
 	updateActive: function( name, serial ){
-		var u = session[ neme ], s, that = this;
+		var u = session[ name ], s, that = this;
 		if( u ){
 			s = u[ serial ];
 			if( s ){
@@ -81,7 +84,7 @@ handle = {
 				// 设置超时
 				s.timer = setTimeout( function(){
 					that.destroy( name, serial );
-				}, Exprie * 60 * 1000 );
+				}, Expire * 60 * 1000 );
 			}
 		}
 	},
@@ -110,11 +113,17 @@ handle = {
 					next( err );
 				}
 				else {
-					var s = user.sessions[ serial ];
-					if( s ){
-						// 将数据导入到内存中
-						that.importSerial( name, serial, s.token );
-						next( null, { token: s.token } );
+					if( user ){
+						var s = user.sessions[ serial ];
+						if( s ){
+							// 将数据导入到内存中
+							that.importSerial( name, serial, s.token );
+							next( null, { token: s.token } );
+						}
+						next( null );
+					}
+					else {
+						next( null );
 					}
 				}
 			});
@@ -201,6 +210,26 @@ handle = {
 				msg: '用户名: ' + name + '不存在'
 			});
 		}
+	},
+
+	newSerial: function( name ){
+		var curDateStr = ( new Date ).toString(),
+			curDate = String( Date.now() );
+
+		var SHA = crypto.createHash( 'sha256' );
+
+		SHA.update( curDateStr + 'freenote' + String( Math.random() ) + name + curDate );
+		return SHA.digest();
+	},
+
+	newToken: function( name, serial ){
+		var curDateStr = ( new Date ).toString(),
+			curDate = String( Date.now() );
+
+		var SHA = crypto.createHash( 'sha256' );
+
+		SHA.update( curDateStr + 'freenote' + String( Math.random() ) + name + serial + curDate );
+		return SHA.digest();
 	}
 };
 

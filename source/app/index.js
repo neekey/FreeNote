@@ -1,23 +1,17 @@
 var express = require( 'express' ),
 	app = express.createServer(),
 	noteHandle = require( './modules/noteHandle' ),
-	ajaxCheck = require( './modules/ajaxCheck.js' ),
-	Mh = require( './modules/mongoHandle' ),
-	router = require( './modules/appRouter' );
+	Rh = require( './modules/routerHandle' );
 
 
-Mh.getUser( 'neekey', function( err, user ){
-	console.log( 'get user test' );
-	console.log( err );
-	console.log( user );
-});
 // 设置渲染引擎
 require( 'jade' );
 app.set( 'view engine', 'jade' );
 app.use( express.bodyParser() );
+app.use( express.cookieParser() );
 
 // 初始化路由
-router.init( app );
+Rh.init( app );
 
 // js+css files
 app.get( '/*.(js|css)', function( req, res ){
@@ -37,12 +31,6 @@ app.get( '/', function( req, res ){
 /* CRUD router */
 
 // read
-router.on( 'getNotes', function( req, res, data ){
-	noteHandle.search( function( results ){
-		res.send( results );
-	});
-
-});
 app.get( '/res/note/:id', function( req, res ){
 	var id = req.params.id;
 	console.log( 'id: ' + id );

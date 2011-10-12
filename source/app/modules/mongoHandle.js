@@ -18,10 +18,7 @@ var handle = {
 			}
 			else {
 				if( !user ){
-					next( {
-						type: 'getUser',
-						msg: '用户名: ' + name + ' 不存在' 
-					});
+					next( null );
 				}
 				else {
 					next( null, user );

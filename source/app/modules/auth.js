@@ -11,7 +11,7 @@ var USERNAME = '_freenote_name',
 
 var auth = {
 	
-	login: function( req, username, password, next ){
+	login: function( req, res, username, password, next ){
 
 		Mh.getUser( username, function( err, user ){
 			if( err ){
@@ -20,9 +20,9 @@ var auth = {
 			else {
 				if( user.password === password ){
 					var newS = Sh.addSerial( username );
-					req.cookie( USERNAME, username ); 
-					req.cookie( SERIAL, newS.serial );
-					req.cookie( TOKEN, newS.token );
+					res.cookie( USERNAME, username, { path: '/' }); 
+					res.cookie( SERIAL, newS.serial, { path: '/' } );
+					res.cookie( TOKEN, newS.token, { path: '/' } );
 
 					next();
 				}
@@ -39,45 +39,50 @@ var auth = {
 	/**
 	 * 验证用户是否登陆
 	 */
-	check: function( req, next ){
+	check: function( req, res, next ){
 		var name = req.cookies[ USERNAME ],
 			serial = req.cookies[ SERIAL ],
 			token = req.cookies[ TOKEN ],
 			that = this;
 
-		Sh.getSession( name, serial, function( err, se ){
-			if( err ){
-				next( err );
-			}
-			else {
-				if( se.token === token ){
-					// 更新token
-					that.updateToken( req, name, serial );
-					next( null, true );
+		if( !name || !serial || !token ){
+			next( null, false );
+		}
+		else {
+			Sh.getSession( name, serial, function( err, se ){
+				if( err ){
+					next( err );
 				}
 				else {
-					next( null, false );
+					if( se && se.token  === token ){
+						// 更新token
+						that.updateToken( req, res, name, serial );
+						next( null, true );
+					}
+					else {
+						next( null, false );
+					}
 				}
-			}
-		});
+			});
+		}
 	},
 
-	logout: function( req, next ){
+	logout: function( req, res, next ){
 		var name = req.cookies[ USERNAME ],
 			serial = req.cookies[ SERIAL ],
 			token = req.cookies[ TOKEN ];
 		
-		req.clearCookie( USERNAME );
-		req.clearCookie( SERIAL );
-		req.clearCookie( TOKEN );
+		res.clearCookie( USERNAME, { path: '/' } );
+		res.clearCookie( SERIAL, { path: '/' } );
+		res.clearCookie( TOKEN, { path: '/' } );
 
 		// 销毁session数据
-		Sh.del( name, serial );
+		Sh.destroy( name, serial, next );
 	},
 
-	updateToken: function( req, name, serial ){
+	updateToken: function( req, res, name, serial ){
 		var token = Sh.updateToken( name, serial );
-		req.cookie( TOKEN, token );
+		res.cookie( TOKEN, token, { path: '/' } );
 	}
 };
 
