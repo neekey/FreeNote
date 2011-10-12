@@ -3,3 +3,4 @@
 *.xmind
 .DS_Store
 .idea/*
+source/.idea/*
