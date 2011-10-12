@@ -1,7 +1,10 @@
+// load config
+require( './modules/config' );
+
 var express = require( 'express' ),
-	app = express.createServer(),
 	noteHandle = require( './modules/noteHandle' ),
-	Rh = require( './modules/routerHandle' );
+	Rh = require( './modules/routerHandle' ),
+	app = express.createServer();
 
 
 // 设置渲染引擎

@@ -7,13 +7,38 @@
  * error tip configuration
  */
 
-var error = {
+var freenote_error = {
 
     // mongo error
-    MONGO: 'database query error',
+    mongo_error: 'database query error: <%= err %>',
 
     // user
-    USER_NOT_EXIST: 'username: <%= name %> not exist',
+    user_not_exist: 'username: <%= name %> not exist',
 
-    //
-}
+    // note
+};
+
+var handle = {
+
+    get: function( type, data ){
+        var msgStr = freenote_error[ type ] || '';
+        return _.template( msgStr, data );
+    },
+
+    /**
+     * 想客户端返回错误信息
+     * @param req
+     * @param res
+     * @param type 错误类型
+     * @param data 返回给客户端额外的数据
+     */
+    response: function( req, res, type, msg, data ){
+        res.send( 200, {
+            type: type,
+            msg: msg,
+            data: data
+        });
+    }
+};
+
+module.exports = handle;

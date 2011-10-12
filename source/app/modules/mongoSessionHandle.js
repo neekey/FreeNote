@@ -3,23 +3,29 @@
  */
 
 var Mgo = require( './mongoModel' ),
-	Muser = Mgo.model( 'user' );
+	Muser = Mgo.model( 'user' ),
+    errorConf = _freenote_cfg.error;
 
 var handle = {
- 	
-	/**
-	 * 根据用户名获取session信息
-	 */
+
+    /**
+     * get user session by name
+     * @param name
+     * @param next( err, sessions )
+     */
 	get: function( name, next ){
 		Muser.findOne( { name: name }, function( err, user ){
 			if( err ){
-				next( err );
+				next( {
+                    type: 'mongo_error',
+                    msg: errorConf.get( 'mongo_error', err )
+                } );
 			}
 			else {
 				if( !user ){
 					next({
-						type: 'name',
-						msg: '用户名: ' + name + ' 不存在'
+						type: 'user_not_exist',
+						msg: errorConf.get( 'user_not_exist', { name: name })
 					});
 				}
 				else {
@@ -29,21 +35,27 @@ var handle = {
 		});
 	},
 
-	/**
-	 * 更新session
-	 */
+    /**
+     * update user sessions
+     * @param name
+     * @param session { serial: token }
+     * @param next( err )
+     */
 	update: function( name, session, next ){
 		
 
 		Muser.findOne( { name: name }, function( err, user ){
 			if( err ){
-				next( err );
+				next( {
+                    type: 'mongo_error',
+                    msg: errorConf.get( 'mongo_error', err )
+                } );
 			}
 			else {
 				if( !user ){
-					next( {
-						type: 'update',
-						msg: '不存在用户：' + name
+					next({
+						type: 'user_not_exist',
+						msg: errorConf.get( 'user_not_exist', { name: name })
 					});
 				}
 				else {
@@ -65,13 +77,29 @@ var handle = {
 					user.updateSession( olds );
 					user.save( function( err ){
 						if( err ){
-							next( err );
+							next( {
+                                type: 'mongo_error',
+                                msg: errorConf.get( 'mongo_error', err )
+                            } );
 						}
                         else {
                             // 若又新的数据，则添加
                             if( hasNew ){
                                 user.updateSession( news );
-                                user.save( next );
+                                user.save( function( err, user ){
+                                    if( err ){
+                                        next( {
+                                            type: 'mongo_error',
+                                            msg: errorConf.get( 'mongo_error', err )
+                                        } );
+                                    }
+                                    else {
+                                        next( null );
+                                    }
+                                });
+                            }
+                            else {
+                                next( null );
                             }
                         }
 					});
@@ -80,53 +108,83 @@ var handle = {
 		});
 	},
 
-	/**
-	 * 删除session
-	 */
+    /**
+     * delete user.sessions[ serial ]
+     * @param name
+     * @param serial
+     * @param next( err )
+     */
 	del: function( name, serial, next ){
 		Muser.findOne( { name: name }, function( err, user ){
 				
 			if( err ){
-				next( err );
+				next( {
+                    type: 'mongo_error',
+                    msg: errorConf.get( 'mongo_error', err )
+                } );
 			}
 			else {
 				if( !user ){
-					next( {
-						type: 'del',
-						msg: '不存在用户：' + name
+					next({
+						type: 'user_not_exist',
+						msg: errorConf.get( 'user_not_exist', { name: name })
 					});
 				}
 				else{
 					user.delSession( serial );
-					user.save( next );
+					user.save( function( err ){
+                        if( err ){
+                            next( {
+                                type: 'mongo_error',
+                                msg: errorConf.get( 'mongo_error', err )
+                            } );
+                        }
+                        else {
+                            next( null );
+                        }
+                    });
 				}
 			}
 		});
 	},
 
-	/**
-	 * 删除所有的session
-	 */
+    /**
+     * delete all the user's sessions
+     * @param name
+     * @param next( err )
+     */
 	delAll: function( name, next ){
 		Muser.findOne( { name: name }, function( err, user ){
 			if( err ){
-				next( err );
+				next( {
+                    type: 'mongo_error',
+                    msg: errorConf.get( 'mongo_error', err )
+                } );
 			}
 			else {
 				if( !user ){
-					next( {
-						type: 'delAll',
-						msg: '不存在用户：' + name
+					next({
+						type: 'user_not_exist',
+						msg: errorConf.get( 'user_not_exist', { name: name })
 					});
 				}
 				else {
 					user.delAllSession();
-					user.save( next );
+					user.save( function( err ){
+                        if( err ){
+                            next( {
+                                type: 'mongo_error',
+                                msg: errorConf.get( 'mongo_error', err )
+                            } );
+                        }
+                        else {
+                            next( null );
+                        }
+                    });
 				}
 			}
 		});
 	}
 };
-
 
 module.exports = handle;

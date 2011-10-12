@@ -2,7 +2,7 @@
  * 定义freenote数据模型
  * @Author neekey<ni184775761@gmail.com>
  */
-var mongoose = require('./mongoConf'),
+var mongoose = require('./mongoose'),
 	schema = mongoose.Schema;
 
 /* define schema */

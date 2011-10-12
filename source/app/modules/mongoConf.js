@@ -7,8 +7,5 @@ var HOST = 'localhost',
 // 连接
 mongoose.connect( HOST, DATABASE, PORT );
 
-module.exports = mongoose;
-
-// mongoose.connect('mongodb://localhost:27017/freenote');
 
 
