@@ -22,4 +22,9 @@ app.get( '/unittest/cookieHandle/:type', function( req, res ){
 	test.run( req, res );
 });
 
+// ====== mongoSessionHandle ======
+app.get( '/unittest/mongoSessionHandle/:type/:name/:param', function( req, res ){
+   var msh = require( './mongoSessionHandle_test' );
+   msh.run( req, res );
+});
 app.listen( 2222 );
