@@ -153,8 +153,16 @@ handle = {
 
                     // set timeout
                     s.timer = setTimeout( function(){
-                        that.del( name, serial, function( err ){
-                            console.log( err );
+
+                        // save session to mongodb
+                        that.save( name, serial, function( err ){
+                            if( err ){
+                                console.log( err );
+                            }
+                            else {
+                                // delete session from memory
+                                that.del( name, serial );
+                            }
                         });
                     }, Expire * 60 * 1000 );
                 }
