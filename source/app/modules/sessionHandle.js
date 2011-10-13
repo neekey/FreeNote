@@ -8,11 +8,11 @@ var Msh = require( './mongoSessionHandle' ),
 // 过期时间（查过这个时间session将从内存中销毁）
 Expire = 30,
 
-session = {
-},
+// session 数据在内存中的保存
+session = {},
 
-sessionSyn = {
-},
+// 用于标识每个用户，出现内存中的session数据少于数据库中的session数据的情况
+sessionSyn = {},
 
 handle = {
 
@@ -30,6 +30,8 @@ handle = {
             session[ name ][ serial] = {};
         }
 		session[ name ][ serial ][ 'token' ] = token;
+
+        this.updateTimer( name, serial );
 	},
 
     /**
@@ -80,31 +82,11 @@ handle = {
             else {
                 if( S[ serial ] ){
 
-                    // remember S from getSession is not the session[ serial ] from memory
                     s = session[ name ][ serial ];
 
                     s.token = that.newToken( name, serial );
-                    s.active = Date.now();
-                    s.clearTimer && s.clearTimer();
-
-                    // set timeout
-                    var timer = setTimeout( function(){
-                        // save session to mongodb
-                        that.save( name, serial, function( err ){
-                            if( err ){
-                                console.log( err );
-                            }
-                            else {
-                                // delete session from memory
-                                that.del( name, serial );
-                            }
-                        });
-                    }, Expire * 60 * 1000 );
-
-                    // reset the clear function
-                    s.clearTimer = function(){
-                        clearTimeout( timer );
-                    };
+                    // remember S from getSession is not the session[ serial ] from memory
+                    that.updateTimer( name, serial );
 
                     next( null, s );
                 }
@@ -167,31 +149,9 @@ handle = {
                 if( S[ serial ] ){
 
                     // remember S from getSession is not the session[ serial ] from memory
-                    s = session[ name ][ serial ];
-                    s.active = Date.now();
+                    that.updateTimer( name, serial );
 
-                    s.clearTimer && s.clearTimer();
-
-                    // set timeout
-                    var timer = setTimeout( function(){
-                        // save session to mongodb
-                        that.save( name, serial, function( err ){
-                            if( err ){
-                                console.log( err );
-                            }
-                            else {
-                                // delete session from memory
-                                that.del( name, serial );
-                            }
-                        });
-                    }, Expire * 60 * 1000 );
-
-                    // reset the clear function
-                    s.clearTimer = function(){
-                        clearTimeout( timer );
-                    };
-
-                    next( null, s );
+                    next( null, session[ name ][ serial ] );
                 }
                 else {
                     next({
@@ -203,6 +163,43 @@ handle = {
             }
         });
 	},
+
+    /**
+     * 更新session的active时间，并设置过期回调
+     * !!! 该方法作为私有方法，应该在确保name和serial指定的session数据存在的时候被调用
+     * @param name
+     * @param serial
+     */
+    updateTimer: function( name, serial ){
+        var that = this;
+
+        var s = session[ name ][ serial ];
+
+        s.active = Date.now();
+
+        // clear timer
+        s.clearTimer && s.clearTimer();
+
+        // set timeout
+        var timer = setTimeout( function(){
+            // save session to mongodb
+            that.save( name, serial, function( err ){
+                if( err ){
+                    console.log( err );
+                }
+                else {
+                    // delete session from memory
+                    that.del( name, serial );
+                    console.log( 'user ' + name + '\' session: ' + serial + ' is expried!' );
+                }
+            });
+        }, Expire * 60 * 1000 );
+
+        // reset the clear function
+        s.clearTimer = function(){
+            clearTimeout( timer );
+        };
+    },
 
     /**
      * get token
@@ -238,11 +235,11 @@ handle = {
      *      err: session_not_found | mongo_error | user_not_exist
      */
 	getSession: function( name, next ){
-		var s = this.getSessionFromMemory( name ),
+		var _s = this.getSessionFromMemory( name ),
             that = this;
 
-        if( s && ( !sessionSyn[ name ] || sessionSyn[ name ].length === 0 ) ){
-            next( null, s );
+        if( _s && ( !sessionSyn[ name ] || sessionSyn[ name ].length === 0 ) ){
+            next( null, _s );
         }
 		else {
 
@@ -258,8 +255,9 @@ handle = {
 
                     // seset sessionSyn
                     sessionSyn[ name ] = [];
-
-                    next( null, s );
+                    
+                    // 不能直接返回s，因为内存中原有可能存在数据库中尚没有的数据
+                    next( null, session[ name ] );
                 }
             })
 		}
