@@ -43,8 +43,11 @@ handle = {
 
 		var serial = this.newSerial( name );
 
+        // add to memory
+        session[ name ][ serial ] = { token: null };
+
 		// 更新
-		this.updateSession( name, serial, function( err ){
+		this.updateSession( name, serial, function( err, s ){
             if( err ){
                 next( err );
             }
@@ -61,7 +64,7 @@ handle = {
      * update session token and active date
      * @param name
      * @param serial
-     * @param next( err )
+     * @param next( err, s )
      *      err: session_not_found | mongo_error | user_not_exist | serial_not_found
      */
     updateSession: function( name, serial, next ){
@@ -75,18 +78,32 @@ handle = {
                 if( S[ serial ] ){
 
                     // remember S from getSession is not the session[ serial ] from memory
-                    s = session[ serial ];
+                    s = session[ name ][ serial ];
 
                     s.token = that.newToken( name, serial );
                     s.active = Date.now();
-                    clearTimeout( s.timer );
+                    s.clearTimer && s.clearTimer();
 
-                    // 设置超时
-                    s.timer = setTimeout( function(){
-                        that.del( name, serial );
+                    // set timeout
+                    var timer = setTimeout( function(){
+                        // save session to mongodb
+                        that.save( name, serial, function( err ){
+                            if( err ){
+                                console.log( err );
+                            }
+                            else {
+                                // delete session from memory
+                                that.del( name, serial );
+                            }
+                        });
                     }, Expire * 60 * 1000 );
 
-                    next( null );
+                    // reset the clear function
+                    s.clearTimer = function(){
+                        clearTimeout( timer );
+                    };
+
+                    next( null, s );
                 }
                 else {
                     next({
@@ -115,10 +132,10 @@ handle = {
                 if( S[ serial ] ){
 
                     // remember S from getSession is not the session[ serial ] from memory
-                    s = session[ serial ];
+                    s = session[ name ][ serial ];
 
                     s.token = that.newToken( name, serial );
-                    next( null );
+                    next( null, s );
                 }
                 else {
                     next({
@@ -147,13 +164,13 @@ handle = {
                 if( S[ serial ] ){
 
                     // remember S from getSession is not the session[ serial ] from memory
-                    s = session[ serial ];
+                    s = session[ name ][ serial ];
                     s.active = Date.now();
-                    clearTimeout( s.timer );
+
+                    s.clearTimer && s.clearTimer();
 
                     // set timeout
-                    s.timer = setTimeout( function(){
-
+                    var timer = setTimeout( function(){
                         // save session to mongodb
                         that.save( name, serial, function( err ){
                             if( err ){
@@ -165,6 +182,13 @@ handle = {
                             }
                         });
                     }, Expire * 60 * 1000 );
+
+                    // reset the clear function
+                    s.clearTimer = function(){
+                        clearTimeout( timer );
+                    };
+
+                    next( null, s );
                 }
                 else {
                     next({
@@ -211,37 +235,53 @@ handle = {
      *      err: session_not_found | mongo_error | user_not_exist
      */
 	getSession: function( name, next ){
-		var u = session[ name ], that = this;
+		var s = this.getSessionFromMemory( name ),
+            that = this;
 
-		if( u ){
-			next( null, u );
-		}
+        if( s ){
+            next( null, s );
+        }
 		else {
-			// 从数据库中获取session数据
-			Msh.get( name, function( err, user ){
-				if( err ){
-					next( err );
-				}
-				else {
-                    if( user.sessions && _.isObject( user.sessions )){
 
-                        // import to memory
-                        _.each( user.sessions, function( t, s ){
-                           that.importSerial( name, s, t );
-                        });
+            this.getSessionFromDB( name, function( err, s ){
+                if( err ){
+                    next( err );
+                }
+                else {
+                    // import to memory
+                    _.each( s, function( t, _s ){
+                       that.importSerial( name, _s, t );
+                    });
 
-                        next( null, user.sessions );
-                    }
-                    else {
-                        next( {
-                            type: 'session_not_found',
-                            msg: errorConf.get( 'session_not_found', { name: name })
-                        });
-                    }
-				}
-			});
+                    next( null, s );
+                }
+            })
 		}
 	},
+
+    /**
+     * get session by name from memory
+     * @param name
+     */
+    getSessionFromMemory: function( name ){
+        return session[ name ];
+    },
+
+    /**
+     * get session by name from mongodb
+     * @param name
+     * @param next( err )
+     */
+    getSessionFromDB: function( name, next ){
+        Msh.get( name, function( err, s ){
+            if( err ){
+                next( err );
+            }
+            else {
+                next( null, s );
+            }
+        });
+    },
 
     /**
      * delete session[ serial ] from memory
@@ -276,7 +316,7 @@ handle = {
      * save session[ serial ] from memory to mongodb
      * @param name
      * @param serial
-     * @param next
+     * @param next( err )
      *      err: mongo_error | user_not_exist
      */
 	save: function( name, serial, next ){
