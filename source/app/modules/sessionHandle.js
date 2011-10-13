@@ -11,6 +11,9 @@ Expire = 30,
 session = {
 },
 
+sessionSyn = {
+},
+
 handle = {
 
     /**
@@ -210,7 +213,7 @@ handle = {
      */
     getToken: function( name, serial, next ){
         var that = this;
-        this.getSession( name, serial, function( err, s ){
+        this.getSession( name, function( err, s ){
             if( err ){
                 next( err );
             }
@@ -238,7 +241,7 @@ handle = {
 		var s = this.getSessionFromMemory( name ),
             that = this;
 
-        if( s ){
+        if( s && ( !sessionSyn[ name ] || sessionSyn[ name ].length === 0 ) ){
             next( null, s );
         }
 		else {
@@ -252,6 +255,9 @@ handle = {
                     _.each( s, function( t, _s ){
                        that.importSerial( name, _s, t );
                     });
+
+                    // seset sessionSyn
+                    sessionSyn[ name ] = [];
 
                     next( null, s );
                 }
@@ -293,6 +299,12 @@ handle = {
 
 		if( u ){
 			delete u[ serial ];
+            if( !sessionSyn[ name ] ){
+                sessionSyn[ name ] = [];
+            }
+            if( _.indexOf( sessionSyn[ name ], serial ) < 0 ){
+                sessionSyn[ name ].push( serial );
+            }
 		}
 	},
 
@@ -309,7 +321,14 @@ handle = {
 		this.del( name, serial );
 
 		// 从数据库中删除
-		Msh.del( name, serial, next );
+		Msh.del( name, serial, function( err ){
+            if( !err ){
+                var index = _.indexOf( sessionSyn[ name ], serial );
+                sessionSyn[ name ].splice( index, 1 );
+            }
+
+            next( err );
+        });
 	},
 
     /**
