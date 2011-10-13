@@ -62,9 +62,13 @@ var handle = {
 
 					var news = {}, olds = {}, 
 						keys = _.keys( session ), i, hasNew = false;
-					
+
+                    console.log( 'user sessions: ');
+                    console.log( user.sessions );
+
+
 					for( i = 0; keys[ i ]; i++ ){
-						if( keys[ i ] in user.sessions ){
+						if( user.sessions && keys[ i ] in user.sessions ){
 							olds[ keys[ i ] ] = session[ keys[ i ] ];
 						}
 						else {
@@ -73,8 +77,17 @@ var handle = {
 						}
 					}
 
+                    console.log( 'old sessions');
+                    console.log( olds );
+                    console.log( 'new sessions');
+                    console.log( news );
+
 					// 先修改已经有的
 					user.updateSession( olds );
+
+                    console.log( 'after schema update');
+                    console.log( user );
+
 					user.save( function( err ){
 						if( err ){
 							next( {
@@ -86,6 +99,8 @@ var handle = {
                             // 若又新的数据，则添加
                             if( hasNew ){
                                 user.updateSession( news );
+                                console.log( 'after update news');
+                                console.log( user );
                                 user.save( function( err, user ){
                                     if( err ){
                                         next( {
