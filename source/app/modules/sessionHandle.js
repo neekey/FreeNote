@@ -3,6 +3,7 @@
  */
 var Msh = require( './mongoSessionHandle' ),
     crypto = require('crypto'),
+    errorConf = _freenote_cfg.error;
 
 // 过期时间（查过这个时间session将从内存中销毁）
 Expire = 30,
@@ -11,10 +12,13 @@ session = {
 },
 
 handle = {
-	
-	/**
-	 * 导入serial数据
-	 */
+
+    /**
+     * import session[ serial ] to memory
+     * @param name
+     * @param serial
+     * @param token
+     */
 	importSerial: function( name, serial, token ){
 		if( !( name in session ) ){
 			session[ name ] = {};
@@ -25,27 +29,31 @@ handle = {
 		session[ name ][ serial ][ 'token' ] = token;
 	},
 
-	/**
-	 * 生成新的serial
-     * @params {String} name username
-     * @params {Object} serial object
-	 */
+    /**
+     * add new session[ serial ]
+     * @param name
+     * @param next( err, { serial: newserial, token: newToken } )
+     *      session_not_found | mongo_error | user_not_exist | serial_not_found
+     */
 	addSerial: function( name, next ){
 
 		if( !( name in session ) ){
 			session[ name ] = {};
 		}
 
-		var u  = session[ name ],
-			serial = this.newSerial( name ),
-			s = u[ serial ] = {};
+		var serial = this.newSerial( name );
 
 		// 更新
-		this.updateSession( name, serial, function( err, s ){
-            next( err, {
-                serial: serial,
-                token: s.token
-            });
+		this.updateSession( name, serial, function( err ){
+            if( err ){
+                next( err );
+            }
+            else {
+                next( null, {
+                    serial: serial,
+                    token: s.token
+                });
+            }
         } );
 	},
 
@@ -53,25 +61,39 @@ handle = {
      * update session token and active date
      * @param name
      * @param serial
-     * @param next( err, s )
+     * @param next( err )
+     *      err: session_not_found | mongo_error | user_not_exist | serial_not_found
      */
     updateSession: function( name, serial, next ){
-        var that = this;
-        this.getSession( name, serial, function( err, s ){
+
+        var that = this, s;
+        this.getSession( name, function( err, S ){
             if( err ){
                 next( err );
             }
             else {
-                s.token = that.newToken( name, serial );
-                s.active = Date.now();
-                clearTimeout( s.timer );
+                if( S[ serial ] ){
 
-                // 设置超时
-                s.timer = setTimeout( function(){
-                    that.destroy( name, serial );
-                }, Expire * 60 * 1000 );
+                    // remember S from getSession is not the session[ serial ] from memory
+                    s = session[ serial ];
 
-                next( null, s );
+                    s.token = that.newToken( name, serial );
+                    s.active = Date.now();
+                    clearTimeout( s.timer );
+
+                    // 设置超时
+                    s.timer = setTimeout( function(){
+                        that.del( name, serial );
+                    }, Expire * 60 * 1000 );
+
+                    next( null );
+                }
+                else {
+                    next({
+                        type: 'serial_not_found',
+                        msg: errorConf.get( 'serial_not_found', { name: name, serial: serial } )
+                    });
+                }
             }
         });
     },
@@ -80,17 +102,30 @@ handle = {
      * update session[ serial ] token
      * @param name
      * @param serial
-     * @param next( err, session[ serial ] )
+     * @param next( err )
+     *      err: session_not_found | mongo_error | user_not_exist | serial_not_found
      */
 	updateToken: function( name, serial, next ){
-        var that = this;
-        this.getSession( name, serial, function( err, s ){
+        var that = this, s;
+        this.getSession( name, function( err, S ){
             if( err ){
                 next( err );
             }
             else {
-                s.token = that.newToken( name, serial );
-                next( null, s );
+                if( S[ serial ] ){
+
+                    // remember S from getSession is not the session[ serial ] from memory
+                    s = session[ serial ];
+
+                    s.token = that.newToken( name, serial );
+                    next( null );
+                }
+                else {
+                    next({
+                        type: 'serial_not_found',
+                        msg: errorConf.get( 'serial_not_found', { name: name, serial: serial } )
+                    });
+                }
             }
         });
 	},
@@ -99,62 +134,102 @@ handle = {
      * update session[ serial ] active date
      * @param name
      * @param serial
-     * @param next( err, session[ serial ] )
+     * @param next( err )
+     *      err: session_not_found | mongo_error | user_not_exist | serial_not_found
      */
 	updateActive: function( name, serial, next ){
-		var that = this;
+		var that = this, s;
+        this.getSession( name, function( err, S ){
+            if( err ){
+                next( err );
+            }
+            else {
+                if( S[ serial ] ){
+
+                    // remember S from getSession is not the session[ serial ] from memory
+                    s = session[ serial ];
+                    s.active = Date.now();
+                    clearTimeout( s.timer );
+
+                    // set timeout
+                    s.timer = setTimeout( function(){
+                        that.del( name, serial, function( err ){
+                            console.log( err );
+                        });
+                    }, Expire * 60 * 1000 );
+                }
+                else {
+                    next({
+                        type: 'serial_not_found',
+                        msg: errorConf.get( 'serial_not_found', { name: name, serial: serial } )
+                    });
+                }
+
+            }
+        });
+	},
+
+    /**
+     * get token
+     * @param name
+     * @param serial
+     * @param next( err, token )
+     *      err: session_not_found | mongo_error | user_not_exist | serial_not_found
+     */
+    getToken: function( name, serial, next ){
+        var that = this;
         this.getSession( name, serial, function( err, s ){
             if( err ){
                 next( err );
             }
             else {
-                s.active = Date.now();
-				clearTimeout( s.timer );
-
-				// 设置超时
-				s.timer = setTimeout( function(){
-					that.destroy( name, serial );
-				}, Expire * 60 * 1000 );
-
-                next( null, s );
+                if( s[ serial ] ){
+                    next( null, s[ serial ] );
+                }
+                else {
+                    next({
+                        type: 'serial_not_found',
+                        msg: errorConf.get( 'serial_not_found', { name: name, serial: serial } )
+                    });
+                }
             }
         });
-	},
-
-
+        
+    },
     /**
-     * get session[ serial ], if not in memory, it will check mongdb, which also fetch the data into memory
+     * get session by username, if not in memory, it will check mongdb, which also fetch the data into memory
      * @param name
-     * @param serial
-     * @param next( err, session[ serial ] )
+     * @param next( err, session )
+     *      err: session_not_found | mongo_error | user_not_exist
      */
-	getSession: function( name, serial, next ){
-		var u = session[ name ], s, that = this;
+	getSession: function( name, next ){
+		var u = session[ name ], that = this;
 
-		if( u && u[ serial ] ){
-			s = u[ serial ];
-			next( null, s );
+		if( u ){
+			next( null, u );
 		}
 		else {
-
 			// 从数据库中获取session数据
 			Msh.get( name, function( err, user ){
 				if( err ){
 					next( err );
 				}
 				else {
-					if( user ){
-						var s = user.sessions[ serial ];
-						if( s ){
-							// 将数据导入到内存中
-							that.importSerial( name, serial, s.token );
-							next( null, session[ name ][ serial ] );
-						}
-						next( null );
-					}
-					else {
-						next( null );
-					}
+                    if( user.sessions && _.isObject( user.sessions )){
+
+                        // import to memory
+                        _.each( user.sessions, function( t, s ){
+                           that.importSerial( name, s, t );
+                        });
+
+                        next( null, user.sessions );
+                    }
+                    else {
+                        next( {
+                            type: 'session_not_found',
+                            msg: errorConf.get( 'session_not_found', { name: name })
+                        });
+                    }
 				}
 			});
 		}
@@ -177,7 +252,8 @@ handle = {
      * delete session from both memory and mongodb
      * @param name
      * @param serial
-     * @param next
+     * @param next( err )
+     *      err: mongo_error | user_not_exist
      */
 	destroy: function( name, serial, next ){
 
@@ -193,6 +269,7 @@ handle = {
      * @param name
      * @param serial
      * @param next
+     *      err: mongo_error | user_not_exist
      */
 	save: function( name, serial, next ){
 		
@@ -203,25 +280,18 @@ handle = {
 			
 			if( s ){
 
-				newS = {
-                    serial: s.token
-                };
+				newS = {};
+                newS[ serial ] = s.token;
 
-				Msh.save( name, newS, next ); 
+				Msh.update( name, newS, next );
 			}
 			else {
-				next({
-					type: 'save',
-					msg: 'serial: ' + serial + '不存在'
-				});
+				next( null );
 			}
 		}
 		else {
-			next({
-				type: 'save',
-				msg: '用户名: ' + name + '不存在'
-			});
-		}
+            next( null );
+        }
 	},
 
     /**

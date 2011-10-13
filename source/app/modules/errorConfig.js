@@ -15,7 +15,11 @@ var freenote_error = {
     // user
     user_not_exist: 'username: <%= name %> not exist',
 
-    // note
+    // sessions
+
+    session_not_found: 'session can not be found from user <%= name %>',
+
+    serial_not_found: 'serial: <%= serial %> can not be found from user <%= name %>'
 };
 
 var handle = {

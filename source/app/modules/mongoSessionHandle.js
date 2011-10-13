@@ -12,6 +12,7 @@ var handle = {
      * get user session by name
      * @param name
      * @param next( err, sessions )
+     *      err: mongo_error | user_not_exist
      */
 	get: function( name, next ){
 		Muser.findOne( { name: name }, function( err, user ){
@@ -40,10 +41,10 @@ var handle = {
      * @param name
      * @param session { serial: token }
      * @param next( err )
+     *      err: mongo_error | user_not_exist
      */
 	update: function( name, session, next ){
 		
-
 		Muser.findOne( { name: name }, function( err, user ){
 			if( err ){
 				next( {
@@ -63,10 +64,6 @@ var handle = {
 					var news = {}, olds = {}, 
 						keys = _.keys( session ), i, hasNew = false;
 
-                    console.log( 'user sessions: ');
-                    console.log( user.sessions );
-
-
 					for( i = 0; keys[ i ]; i++ ){
 						if( user.sessions && keys[ i ] in user.sessions ){
 							olds[ keys[ i ] ] = session[ keys[ i ] ];
@@ -77,16 +74,8 @@ var handle = {
 						}
 					}
 
-                    console.log( 'old sessions');
-                    console.log( olds );
-                    console.log( 'new sessions');
-                    console.log( news );
-
 					// 先修改已经有的
 					user.updateSession( olds );
-
-                    console.log( 'after schema update');
-                    console.log( user );
 
 					user.save( function( err ){
 						if( err ){
@@ -99,8 +88,6 @@ var handle = {
                             // 若又新的数据，则添加
                             if( hasNew ){
                                 user.updateSession( news );
-                                console.log( 'after update news');
-                                console.log( user );
                                 user.save( function( err, user ){
                                     if( err ){
                                         next( {
@@ -128,6 +115,7 @@ var handle = {
      * @param name
      * @param serial
      * @param next( err )
+     *      err: mongo_error | user_not_exist
      */
 	del: function( name, serial, next ){
 		Muser.findOne( { name: name }, function( err, user ){
