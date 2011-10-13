@@ -27,4 +27,11 @@ app.get( '/unittest/mongoSessionHandle/:type/:name/:param', function( req, res )
    var msh = require( './mongoSessionHandle_test' );
    msh.run( req, res );
 });
+
+// ====== sessionHandle ======
+app.get( '/unittest/sessionHandle/:type/:p1/:p2/:p3', function( req, res ){
+   var sh = require( './sessionHandle_test' );
+   sh.run( req, res );
+});
+
 app.listen( 2222 );
