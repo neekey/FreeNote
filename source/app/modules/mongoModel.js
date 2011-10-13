@@ -267,14 +267,26 @@ Suser.methods.updateSession = function( se ){
  * @param {String} serial
  */
 Suser.methods.delSession = function( serial ){
-	delete this.sessions[ serial ];
+    var _tempSessions = this.sessions;
+
+    if( !_tempSessions ){
+        _tempSessions = {};
+    }
+
+	delete _tempSessions[ serial ];
+
+    this.sessions = _tempSessions;
+
+    this.markModified('sessions');
 };
 
 /**
  * 清空用户的session数据
  */
 Suser.methods.delAllSession = function(){
+
 	this.sessions = {};
+    this.markModified('sessions');
 };
 
 mongoose.model( 'user', Suser );
