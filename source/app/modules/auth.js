@@ -19,12 +19,14 @@ var auth = {
 			}
 			else {
 				if( user.password === password ){
-					var newS = Sh.addSerial( username );
-					res.cookie( USERNAME, username, { path: '/' }); 
-					res.cookie( SERIAL, newS.serial, { path: '/' } );
-					res.cookie( TOKEN, newS.token, { path: '/' } );
+					Sh.addSerial( username, function( err, s ){
+                        res.cookie( USERNAME, username, { path: '/' });
+                        res.cookie( SERIAL, s.serial, { path: '/' } );
+                        res.cookie( TOKEN, s.token, { path: '/' } );
 
-					next();
+                        next();
+                    });
+
 				}
 				else {
 					next( {

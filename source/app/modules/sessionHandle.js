@@ -30,7 +30,7 @@ handle = {
      * @params {String} name username
      * @params {Object} serial object
 	 */
-	addSerial: function( name ){
+	addSerial: function( name, next ){
 
 		if( !( name in session ) ){
 			session[ name ] = {};
@@ -41,13 +41,12 @@ handle = {
 			s = u[ serial ] = {};
 
 		// 更新
-		this.updateActive( name, serial );
-		this.updateToken( name, serial );
-
-		return {
-			serial: serial,
-			token: s.token
-		};
+		this.updateSession( name, serial, function( err, s ){
+            next( err, {
+                serial: serial,
+                token: s.token
+            });
+        } );
 	},
 
     /**

@@ -2,6 +2,7 @@
  * еДжцнд╪Ч
  */
 
+require( './global_module' );
 /* mongodb config */
 require( './mongoConf.js');
 
