@@ -2,7 +2,7 @@
  * 定义freenote数据模型
  * @Author neekey<ni184775761@gmail.com>
  */
-var mongoose = require('./mongoose'),
+var mongoose = require( 'mongoose' ),
 	schema = mongoose.Schema;
 
 /* define schema */
@@ -26,7 +26,7 @@ Stag = new schema({
 Suser = new schema({
 	name: { type: String, required: true, unique: true },
 	password: { type: String, required: true },
-	sessions: { any: {} },
+	sessions: {},
 	notes: [ Snote ],
 	tags: [ Stag ] 
 });
@@ -247,7 +247,19 @@ Suser.methods.delTagNote = function( t, id ){
  * @param {Session} se
  */
 Suser.methods.updateSession = function( se ){
-	_.extend( this.sessions, se );
+
+    var _tempSessions = this.sessions;
+
+    if( !_tempSessions ){
+        _tempSessions = {};
+    }
+    
+	_.extend( _tempSessions, se );
+
+    this.sessions = _tempSessions;
+
+    // as the type of sessions is 'any', so every change of sessions should call markModified( 'sessions' )
+    this.markModified('sessions');
 };
 
 /**
