@@ -30,7 +30,15 @@ var handle = {
 					});
 				}
 				else {
-					next( null, user.sessions );
+                    if( user.sessions && _.keys( user.sessions ).length > 0 ){
+					    next( null, user.sessions );
+                    }
+                    else {
+                        next({
+                            type: 'session_not_found',
+                            msg: errorConf.get( 'session_not_found', { name: name } )
+                        })
+                    }
 				}
 			}
 		});
