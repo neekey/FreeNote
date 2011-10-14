@@ -3,22 +3,31 @@
  */
 
 var Mgo = require( './mongoModel' ),
-	_ = require( 'underscore' ),
-	Muser = Mgo.model( 'user' );
+	Muser = Mgo.model( 'user' ),
+    errorConf = _freenote_cfg.error;
 
 var handle = {
 
-	/**
-	 * 获取用户
-	 */
+    /**
+     * get user
+     * @param name
+     * @param next( err, user )
+     *      err: mongo_error | user_not_exist
+     */
 	getUser: function( name, next ){
 		Muser.findOne( { name: name }, function( err, user ){
 			if( err ){ 
-				next( err );
+				next({
+                    type: 'mongo_error',
+                    msg: errorConf.get( 'mongo_error' )
+                });
 			}
 			else {
 				if( !user ){
-					next( null );
+					next({
+                        type: 'user_not_exist',
+                        msg: errorConf.get( 'user_not_exist', { name: name } )
+                    });
 				}
 				else {
 					next( null, user );
@@ -36,7 +45,14 @@ var handle = {
 				name: name,
 				password: password
 			});
-			user.save( next );
+			user.save( function( err ){
+                if( err ){
+                    next( {
+                        type: 'mongo_error',
+                        msg: errorConf.get( 'mongo_error' )
+                    })
+                }
+            });
 		}
 		else {
 			next( { err: 'name and password must be string' } );

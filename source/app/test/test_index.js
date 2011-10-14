@@ -34,4 +34,10 @@ app.get( '/unittest/sessionHandle/:type/:p1/:p2/:p3', function( req, res ){
    sh.run( req, res );
 });
 
+// ====== auth ======
+app.get( '/unittest/auth/:type/:p1/:p2', function( req, res ){
+   var ah = require( './auth_test' );
+    ah.run( req, res );
+});
+
 app.listen( 2222 );

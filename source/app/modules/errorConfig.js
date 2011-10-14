@@ -19,12 +19,23 @@ var freenote_error = {
 
     session_not_found: 'session can not be found from user <%= name %>',
 
-    serial_not_found: 'serial: <%= serial %> can not be found from user <%= name %>'
+    serial_not_found: 'serial: <%= serial %> can not be found from user <%= name %>',
+
+    // auth
+
+    unsafe_cookie: 'your cookie is unsafe, it will be destroy!',
+
+    logout_fail: 'you have not login!',
+
+    already_login: 'you have login as user: <%= name %>',
+
+    password_incorrect: 'you password is not correct'
 };
 
 var handle = {
 
     get: function( type, data ){
+        data = data || {};
         var msgStr = freenote_error[ type ] || '';
         return _.template( msgStr, data );
     },
