@@ -2,7 +2,7 @@
  * Created by JetBrains WebStorm.
  * User: neekey
  * Date: 11-10-12
- * Time: ÏÂÎç2:35
+ * Time: ï¿½ï¿½ï¿½ï¿½2:35
  *
  * error tip configuration
  */
@@ -35,7 +35,11 @@ var freenote_error = {
 
     not_login: 'you have not logined in',
 
-    password_incorrect: 'you password is not correct'
+    password_incorrect: 'you password is not correct',
+
+    // note
+
+    note_not_exist: 'note id: <%=  id %> not exist in user: <%= name %>'
 };
 
 var handle = {
@@ -47,11 +51,11 @@ var handle = {
     },
 
     /**
-     * Ïë¿Í»§¶Ë·µ»Ø´íÎóÐÅÏ¢
+     * ï¿½ï¿½Í»ï¿½ï¿½Ë·ï¿½ï¿½Ø´ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
      * @param req
      * @param res
-     * @param type ´íÎóÀàÐÍ
-     * @param data ·µ»Ø¸ø¿Í»§¶Ë¶îÍâµÄÊý¾Ý
+     * @param type ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+     * @param data ï¿½ï¿½ï¿½Ø¸ï¿½Í»ï¿½ï¿½Ë¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
      */
     response: function( req, res, type, msg, data ){
         res.send( 200, {

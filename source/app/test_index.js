@@ -54,13 +54,29 @@ app.get( '/unittest/auth/:type/:p1/:p2', function( req, res ){
     ah.run( req, res );
 });
 
+// ====== mongoNoteHandle ======
+app.get( '/unittest/mongoNoteHandle', function( req, res ){
+
+    res.render( 'mongoNoteHandle/index.jade', {
+        layout: false,
+        title: 'mongoNoteHandle',
+        js: [ '/mongoNoteHandle/index.js' ]
+    });
+});
+
+app.post( '/unittest/mongoNoteHandle', function( req, res ){
+
+    var Mnh = require( './test/mongoNoteHandle_test' );
+    Mnh.run( req, res );
+});
 // ====== routerHandle - auth ======
 app.get( '/unittest/routerhandle_auth', function( req, res ){
+
    res.render( 'auth/index.jade', {
        layout: false,
        main: 'auth/index.jade',
        title: 'routerHandle_auth',
-       js: [ '/models/user.js', '/auth/register.js' ]
+       js: [ '/models/user.js', '/auth/index.js' ]
    });
 });
 
