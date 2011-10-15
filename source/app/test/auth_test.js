@@ -40,7 +40,16 @@ exports.run = function( req, res ){
                 }
             });
             break;
-       case 'updateSession':
+       case 'register':
+            Ah.register( req, res, p1, p2, function( err, s ){
+                if( err ){
+                    res.send( err );
+                }
+                else {
+                    res.send( s );
+                }
+            });
+            break;
             
        default:
             res.send( 404 );

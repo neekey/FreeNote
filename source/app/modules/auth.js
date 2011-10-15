@@ -14,6 +14,68 @@ var USERNAME = '_freenote_name',
 var auth = {
 
     /**
+     * register
+     * @param req
+     * @param res
+     * @param name
+     * @param password
+     * @param next( err, user )
+     *      err: session_not_found | mongo_error | user_not_exist | serial_not_found | already_login
+     */
+    register: function( req, res, name, password, next ){
+
+        this.check( req, res, function( err, result, _name ){
+            if( err ){
+                next( err );
+            }
+            else {
+
+                if( result ){
+                    next({
+                        type: 'already_login',
+                        msg: errorConf.get( 'already_login', { name: _name } )
+                    });
+                }
+                else {
+                    Mh.getUser( name, function( err, user ){
+                        if( err ){
+                            if( err.type === 'user_not_exist' ){
+                                Mh.addUser( name, password, function( err, user ){
+                                    if( err ){
+                                        next( err );
+                                    }
+                                    else {
+
+                                        Sh.addSerial( name, function( err, s ){
+
+                                            var newCookie = {};
+                                            newCookie[ USERNAME ] = name;
+                                            newCookie[ SERIAL ] = s.serial;
+                                            newCookie[ TOKEN ] = s.token;
+
+                                            Ch.set( res, newCookie );
+
+                                            next( null, user );
+                                        });
+                                    }
+                                });
+                            }
+                            else {
+                                next( err );
+                            }
+                        }
+                        else {
+                            next({
+                                type: 'user_already_exist',
+                                msg: errorConf.get( 'user_already_exist', { name: name } )
+                            })
+                        }
+                    });
+                }
+            }
+        });
+    },
+    /**
      * login
      * @param req
      * @param res
@@ -24,7 +86,7 @@ var auth = {
      */
 	login: function( req, res, name, password, next ){
 
-        this.check( req, res, function( err, result ){
+        this.check( req, res, function( err, result, _name ){
             if( err ){
                 next( err );
             }
@@ -33,7 +95,7 @@ var auth = {
                 if( result ){
                     next({
                         type: 'already_login',
-                        msg: errorConf.get( 'already_login', { name: name } )
+                        msg: errorConf.get( 'already_login', { name: _name } )
                     });
                 }
                 else {
@@ -83,13 +145,18 @@ var auth = {
 			token = req.cookies[ TOKEN ],
 			that = this;
 
-		if( !name || !serial || !token ){
+		if( !name || !serial ){
 			next( null, false );
 		}
 		else {
 			Sh.getSession( name, function( err, se ){
 				if( err ){
-					next( err );
+                    if( err.type === 'mongo_error' ){
+					    next( err );
+                    }
+                    else {
+                        next( null, false );
+                    }
 				}
 				else {
 					if( se && se[ serial ] && se[ serial ].token  === token ){
@@ -99,7 +166,7 @@ var auth = {
                                 next( err, false );
                             }
                             else {
-                                next( null, true );
+                                next( null, true, name );
                             }
                         });
 					}
@@ -111,6 +178,9 @@ var auth = {
                                 next( err );
                             }
                             else {
+                                // delete cookie
+                                Ch.clear( res, [ USERNAME, SERIAL, TOKEN ] );
+
                                 next({
                                     type: 'unsafe_cookie',
                                     msg: errorConf.get( 'unsafe_cookie' )

@@ -9,7 +9,7 @@ var express = require( 'express' ),
 
 // 设置渲染引擎
 require( 'jade' );
-app.set( 'view engine', 'jade' );
+app.set( 'views engine', 'jade' );
 app.use( express.bodyParser() );
 app.use( express.cookieParser() );
 

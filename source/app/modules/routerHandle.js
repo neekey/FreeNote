@@ -1,9 +1,9 @@
 var router = require( './appRouter' ),
 	ajaxCheck = require( './ajaxCheck' ),
 	Mh = require( './mongoHandle' ),
-	_ = require( 'underscore' ),
 	auth = require( './auth' ),
-	Emit = require( 'events' ).EventEmitter;
+	Emit = require( 'events' ).EventEmitter,
+    errorConf = _freenote_cfg.error;
 
 var handle = new Emit;
 
@@ -16,110 +16,137 @@ _.extend( handle, {
 		// 初始化路由		
 		router.init( app );
 
-		// 每个请求的预处理	
-		router.on( 'beforeHandle', function(){
-			that.preHandle.apply( that, arguments ); 
-		});
-
 		// 添加每个请求的处理 
 		for( evt in this._router ){
-			router.on( evt, (function( e ){
-				return function(){
-					that._router[ e ].apply( that, arguments );
+			router.on( evt, ( function( e ){
+
+				return function( req, res ){
+                    that.preHandle( req, res, e, function(){
+                        that._router[ e ].call( that, req, res );
+                    });
 				};
 			})( evt ));
-			
 		}
 
-		this.on( '_error', function( req, res, err ){
-			console.log( err );
-			res.send( 201, err );
-		});
+        // Listen to '_error'
+        this.on( '_error', function(){
+           that.errorHandle.apply( that, arguments );
+        });
+
 	},
 
 	_router: {
-		'userLogin': function( req, res, data ){
-			var that = this;
-			auth.login( req, res, data.name, data.password, function( err ){
-				if( err ){
-					that.emit( '_error', req, res );
-				}
-				else {
-					res.send({ msg: 'login success' });
-				}
-			});
-		},
 
-		'userLogout': function( req, res ){
-			var that = this;
-			auth.logout( req, res, function( err ){
-				if( err ){
-					that.emit( '_error', req, res );
-				}
-				else  {
-					res.send({ msg: 'logout success' });
-				}
-			});
-		},
+        /**
+         * user login
+         * @param req
+         * @param res
+         */
+		'login': function( req, res ){
 
-		'addUser': function( req, res, data ){
-			var that = this;
+			var that = this,
+                data = req.body,
+                name = data.name,
+                password = data.password;
 
-			Mh.getUser( data.name, function( err, user ){
-				if( err ){
-					that.emit( '_error', req, res, err );	
-				}
-				else {
-					if( user ){
-						that.emit( '_error', req, res, {
-							type: 'addUser',
-							msg: '用户名：' + data.name + ' 已经存在'
-						});
-					}
-					else {
-						Mh.addUser( data.name, data.password, function( err, user ){
-							if( err ){
-								that.emit( '_error', req, res, err );
-							}
-							else {
-								auth.login( req, res, data.name, data.password, function( err ){
-									if( err ){
-										that.emit( '_error', req, res, err );
-									}
-									else {
-										res.send({ id: user._id });
-									}
-								});
-							}
-						});
-					}
-				}
-			});
-		}
-	},
-
-	preHandle: function( req, res, next ){
-		if( !ajaxCheck.check( req ) ){
-			next( false );
-		}
-		else {
-			var that = this;
-			// auth check
-			auth.check( req, res, function( err, result ){
+			auth.login( req, res, name, password, function( err, s ){
 				if( err ){
 					that.emit( '_error', req, res, err );
 				}
 				else {
-					if( result ){
-						next( true );
-					}
-					else {
-						next( false );
-					}
+					res.send({ result: true });
 				}
 			});
+		},
+
+        /**
+         * user logout
+         * @param req
+         * @param res
+         */
+		'logout': function( req, res ){
+
+			var that = this;
+			auth.logout( req, res, function( err ){
+				if( err ){
+					that.emit( '_error', req, res, err );
+				}
+				else  {
+					res.send({ result: true });
+				}
+			});
+		},
+
+		'register': function( req, res, data ){
+
+			var that = this,
+                data = req.body,
+                name = data.name,
+                password = data.password;
+
+			auth.register( req, res, name, password, function( err, user ){
+                if( err ){
+                    that.emit( '_error', req, res, err );
+                }
+                else {
+                    res.send( { id: user._id } );
+                }
+            })
 		}
-	}
+	},
+
+    /**
+     * rehandle all the request
+     * @param req
+     * @param res
+     * @param type
+     * @param next()
+     */
+	preHandle: function( req, res, type, next ){
+		if( !ajaxCheck.check( req ) ){
+			this.emit( '_error', req, res, {
+                type: 'not_ajax',
+                msg: errorConf.get( 'not_ajax' )
+            });
+		}
+		else {
+            if( type === 'login' || type === 'logout' || 'register' ){
+                next();
+            }
+            else {
+                var that = this;
+
+                // auth check
+                auth.check( req, res, function( err, result ){
+                    if( err ){
+                        that.emit( '_error', req, res, err );
+                    }
+                    else {
+                        if( result ){
+                            next();
+                        }
+                        else {
+                            that.emit( '_error', req, res, {
+                                type: 'not_login',
+                                msg: errorConf.get( 'not_login' )
+                            });
+                        }
+                    }
+                });
+            }
+
+		}
+	},
+
+    /**
+     * error handle
+     * @param req
+     * @param res
+     * @param err
+     */
+    errorHandle: function( req, res, err ){
+        res.send( 404, err );
+    }
 	
 });
 

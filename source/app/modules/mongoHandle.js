@@ -16,10 +16,10 @@ var handle = {
      */
 	getUser: function( name, next ){
 		Muser.findOne( { name: name }, function( err, user ){
-			if( err ){ 
+			if( err ){
 				next({
                     type: 'mongo_error',
-                    msg: errorConf.get( 'mongo_error' )
+                    msg: errorConf.get( 'mongo_error', err )
                 });
 			}
 			else {
@@ -36,27 +36,31 @@ var handle = {
 		});
 	},
 
-	/** 
-	 * 添加用户
-	 */
+    /**
+     * add user
+     * @param name
+     * @param password
+     * @param next( err, user )
+     *      err: mongo_error
+     */
 	addUser: function( name, password, next ){
-		if( _.isString( name ) && _.isString( password ) ){ 
-			var user = new Muser({
-				name: name,
-				password: password
-			});
-			user.save( function( err ){
-                if( err ){
-                    next( {
-                        type: 'mongo_error',
-                        msg: errorConf.get( 'mongo_error' )
-                    })
-                }
-            });
-		}
-		else {
-			next( { err: 'name and password must be string' } );
-		}
+
+        var user = new Muser({
+            name: name,
+            password: password
+        });
+
+        user.save( function( err ){
+            if( err ){
+                next( {
+                    type: 'mongo_error',
+                    msg: errorConf.get( 'mongo_error', err )
+                });
+            }
+            else {
+                next( null, user );
+            }
+        });
 	},
 
 

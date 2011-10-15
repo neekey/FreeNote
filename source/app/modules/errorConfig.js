@@ -10,10 +10,12 @@
 var freenote_error = {
 
     // mongo error
-    mongo_error: 'database query error: <%= err %>',
+    mongo_error: 'database query error: <%= message %>',
 
     // user
     user_not_exist: 'username: <%= name %> not exist',
+
+    user_already_exist: 'username: <%= name %> already exist',
 
     // sessions
 
@@ -23,11 +25,15 @@ var freenote_error = {
 
     // auth
 
+    not_ajax: 'your request is not ajax',
+
     unsafe_cookie: 'your cookie is unsafe, it will be destroy!',
 
     logout_fail: 'you have not login!',
 
     already_login: 'you have login as user: <%= name %>',
+
+    not_login: 'you have not logined in',
 
     password_incorrect: 'you password is not correct'
 };

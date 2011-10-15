@@ -1,0 +1,19 @@
+link( rel="stylesheet", type="text/css", href="/index.css" )
+script( src="/core/underscore.js" )
+script( src="/core/jquery.js" )
+script( src="/core/backbone.js" )
+script( src="/config.js" )
+
+- var js = js || [], css = css || [], i;
+- if( js ){
+-   for( i = 0; js[ i ]; i++ ){
+        script( src="#{js[ i ]}" )
+-   }
+- }
+
+- if( css ){
+-   for( i = 0; css[ i ]; i++ ){
+        link( href="#{css[ i ]}", type="test/css", rel="stylesheet" )
+-   }
+- }
+
