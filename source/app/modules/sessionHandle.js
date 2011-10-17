@@ -2,6 +2,7 @@
  * 内存中的session信息
  */
 var Msh = require( './mongoSessionHandle' ),
+    syH = require( './syncHandle' ),
     crypto = require('crypto'),
     errorConf = _freenote_cfg.error;
 
@@ -23,6 +24,7 @@ handle = {
      * @param token
      */
 	importSerial: function( name, serial, token ){
+
 		if( !( name in session ) ){
 			session[ name ] = {};
 		}
@@ -107,7 +109,7 @@ handle = {
      * @param next( err )
      *      err: session_not_found | mongo_error | user_not_exist | serial_not_found
      */
-	updateToken: function( name, serial, next ){
+    updateToken: function( name, serial, next ){
         var that = this, s;
         this.getSession( name, function( err, S ){
             if( err ){
@@ -130,7 +132,7 @@ handle = {
                 }
             }
         });
-	},
+    },
 
     /**
      * update session[ serial ] active date
@@ -292,19 +294,24 @@ handle = {
      * @param name
      * @param serial
      */
-	del: function( name, serial ){
-		var u = session[ name ];
+    del: function( name, serial ){
 
-		if( u ){
-			delete u[ serial ];
+        var u = session[ name ];
+
+        if( u ){
+
+            delete u[ serial ];
+
             if( !sessionSyn[ name ] ){
+
                 sessionSyn[ name ] = [];
             }
             if( _.indexOf( sessionSyn[ name ], serial ) < 0 ){
+
                 sessionSyn[ name ].push( serial );
             }
-		}
-	},
+        }
+    },
 
     /**
      * delete session from both memory and mongodb

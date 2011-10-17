@@ -80,4 +80,11 @@ app.get( '/unittest/routerhandle_auth', function( req, res ){
    });
 });
 
+// ====== syncHandle ====== */
+app.get( '/unittest/synchandle/:type/:p1/:p2/:p3', function( req, res ){
+
+    var sh = require( './test/syncHandle_test' );
+    sh.run( req, res );
+});
+
 app.listen( 2222 );

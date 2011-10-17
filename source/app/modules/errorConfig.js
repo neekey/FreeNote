@@ -39,7 +39,15 @@ var freenote_error = {
 
     // note
 
-    note_not_exist: 'note id: <%=  id %> not exist in user: <%= name %>'
+    note_not_exist: 'note id: <%=  id %> not exist in user: <%= name %>',
+
+    // sync
+
+    syncs_not_found: 'sync data is not found from user: <%= name %>',
+
+    sync_not_found: 'sync: <%= serial %> not found from user: <%= name %>',
+
+    sync_already_exist: 'sync: <%= serial %> already exist from user: <%= name %>'
 };
 
 var handle = {

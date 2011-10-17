@@ -27,11 +27,14 @@ Suser = new schema({
 	name: { type: String, required: true, unique: true },
 	password: { type: String, required: true },
 	sessions: {},
+    syncs: {},
 	notes: [ Snote ],
 	tags: [ Stag ] 
 });
 
 /* define schema method */
+
+/* ====== note methods ====== */
 
 /**
  * 添加笔记
@@ -253,6 +256,8 @@ Suser.methods.delTagNote = function( t, id ){
 	}
 };
 
+/* ====== session method ====== */
+
 /**
  * 更新session数据
  * @param {Session} se
@@ -298,6 +303,47 @@ Suser.methods.delAllSession = function(){
 
 	this.sessions = {};
     this.markModified('sessions');
+};
+
+/* ====== sync methods ====== */
+
+/**
+ * update sync
+ * @param sy
+ */
+Suser.methods.updateSync = function( sy ){
+
+    var _tempSync = this.syncs;
+
+    if( !_tempSync ){
+        _tempSync = {};
+    }
+
+    _.extend( _tempSync, sy );
+
+    this.syncs = _tempSync;
+
+    this.markModified( 'syncs' );
+};
+
+/**
+ * delete serial
+ * @param serial
+ */
+Suser.methods.delSync = function( serial ){
+
+    var _tempSync = this.syncs;
+
+    if( !_tempSync ){
+
+        _tempSync = {};
+    }
+
+    delete _tempSync[ serial ];
+
+    this.syncs = _tempSync;
+
+    this.markModified( 'syncs' );
 };
 
 mongoose.model( 'user', Suser );

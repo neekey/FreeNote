@@ -14,24 +14,24 @@ var handle = {
      * @param next( err, sessions )
      *      err: mongo_error | user_not_exist
      */
-	get: function( name, next ){
-		Muser.findOne( { name: name }, function( err, user ){
-			if( err ){
-				next( {
+    get: function( name, next ){
+        Muser.findOne( { name: name }, function( err, user ){
+            if( err ){
+                next( {
                     type: 'mongo_error',
                     msg: errorConf.get( 'mongo_error', err )
                 } );
-			}
-			else {
-				if( !user ){
-					next({
-						type: 'user_not_exist',
-						msg: errorConf.get( 'user_not_exist', { name: name })
-					});
-				}
-				else {
+            }
+            else {
+                if( !user ){
+                    next({
+                        type: 'user_not_exist',
+                        msg: errorConf.get( 'user_not_exist', { name: name })
+                    });
+                }
+                else {
                     if( user.sessions && _.keys( user.sessions ).length > 0 ){
-					    next( null, user.sessions );
+                        next( null, user.sessions );
                     }
                     else {
                         next({
@@ -39,10 +39,10 @@ var handle = {
                             msg: errorConf.get( 'session_not_found', { name: name } )
                         })
                     }
-				}
-			}
-		});
-	},
+                }
+            }
+        });
+    },
 
     /**
      * update user sessions
