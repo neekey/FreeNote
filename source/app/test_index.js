@@ -87,4 +87,16 @@ app.get( '/unittest/synchandle/:type/:p1/:p2/:p3', function( req, res ){
     sh.run( req, res );
 });
 
+// ====== touch TEST ===== */
+app.get( '/unittest/touch_test', function( req, res ){
+
+    res.render( 'touch_test/index.jade', {
+        layout: false,
+        title: 'touch TEST',
+        js: [ '/touch_test/index.js' ],
+        css: [ '/touch_test/index.css' ]
+    });
+});
+
+
 app.listen( 2222 );
