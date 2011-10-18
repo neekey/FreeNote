@@ -11,12 +11,13 @@ var Sync = {},
 var sync = {
     serial1: {
         sync: Date.now(),
-        changeList: {
-            note_id: {
-                type: 'del|add|update',
-                note: note,
-                date: 
-            }
+        changeList: [{
+            type: 'del|add|update',
+            note: note,
+            date:
+        }],
+        changeIndex: {
+            note_ind: index
         }
     }
 }
@@ -62,7 +63,8 @@ var handle = {
                     syncs[ serial ] = {
                         synced: false,
                         sync: null,
-                        changeList: {}
+                        changeList: [],
+                        changeIndex: {}
                     };
 
                     return next( null, syncs[ serial ] );
@@ -85,12 +87,23 @@ var handle = {
 
                 if( serial in syncs ){
 
-                    var s = syncs[ serial ],
-                        c = s[ id ];
+                    var s = syncs[ serial ], index;
 
                     change[ 'date' ] = Date.now();
 
-                    s[ id ] = change;
+                    change[ 'id' ] = id;
+
+                    // 是否已经存在该id对应的修改
+                    if( id in s.changeIndex ){
+
+                        index = s.changeIndex[ id ];
+                        s.changeList[ index ] = change;
+                    }
+                    else {
+
+                        s.changeList.push( change );
+                        s.changeIndex[ id ] = s.changeList.length - 1;
+                    }
 
                     next( null );
                 }
@@ -301,28 +314,63 @@ var handle = {
 
     /**
      * compare 2 changelist and return the result
-     * @param list1
-     * @param list2
+     * @param sync1
+     * @param sync2
      */
-    compare: function( list1, list2 ){
+    compare: function( sync1, sync2 ){
 
-        var _list1 = _.defaults( _.clone( list1 ), list2 ),
-            _list2 = _.defaults( _.clone( list2 ), list1 ),
-            list = {};
+        var index1 = sync1.changeIndex,
+            index2 = sync2.changeIndex,
+            ids1 = _.keys( index1 ),
+            ids2 = _.keys( index2 ),
+            ids = _.union( ids1, ids2 ),
+            change1 = sync1.changeList,
+            change2 = sync2.changeList,
+            list = [];
 
-        _.each( _list1, function( value1, key ){
+        _.each( ids, function( id, index ){
 
-            var value2 = _list2[ key ];
+            var _change1 = change1[ index ],
+                _change2 = change2[ index ],
+                _change;
 
-            if( value1.date > value2.date ){
+            if( !_change1 ){
 
-                list[ key ] = value1;
+                _change = _change2;
+            }
+            else if( !_change2 ) {
+
+                _change = _change1;
+            }
+            else if( _change1.date > _change2.date ){
+
+                _change = _change1;
             }
             else {
 
-                list[ key ] = value2;
+                _change = _change2;
+            }
+
+            list.push( _change );
+        });
+
+        // 将没有id的记录添加进来（比如添加笔记）
+        _.each( change1, function( change ){
+
+            if( change.id === undefined ){
+
+                list.push( change );
             }
         });
+
+        _.each( change2, function( change ){
+
+            if( change.id === undefined ){
+
+                list.push( change );
+            }
+        });
+
 
         return list;
     }
