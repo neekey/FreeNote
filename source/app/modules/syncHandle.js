@@ -91,7 +91,7 @@ var handle = {
 
                     change[ 'date' ] = Date.now();
 
-                    change[ 'id' ] = id;
+                    change[ '_id' ] = id;
 
                     // 是否已经存在该id对应的修改
                     if( id in s.changeIndex ){
@@ -357,7 +357,7 @@ var handle = {
         // 将没有id的记录添加进来（比如添加笔记）
         _.each( change1, function( change ){
 
-            if( change.id === undefined ){
+            if( change._id === undefined ){
 
                 list.push( change );
             }
@@ -365,7 +365,7 @@ var handle = {
 
         _.each( change2, function( change ){
 
-            if( change.id === undefined ){
+            if( change._id === undefined ){
 
                 list.push( change );
             }
