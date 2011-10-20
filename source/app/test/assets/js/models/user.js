@@ -3,7 +3,7 @@
  * @author Neekey<ni184775761@gmail.com>
  */
 
-!function( app ){
+(function( app ){
 	
 	var Mtag = app.models.tag =  Backbone.Model.extend({
 		defaults: {
@@ -18,7 +18,8 @@
 			'tags': [],
 			'created': '',
 			'updated': ''
-		}
+		},
+        localStorage: new app.mods.localStorageStore( 'note' )
 	}),
 
 	CLtag = app.collections.tag = Backbone.Collection.extend({
@@ -34,6 +35,8 @@
 
 		model: Mnote,
 
+        localStorage: new app.mods.localStorageStore( 'note' ),
+        
 		initialize: function(){
 		}
 	}),
@@ -47,6 +50,13 @@
 		urlRoot: '/res/user/'
 	});
 
+    var models = app[ 'models' ];
 
-}( window[ 'freenote' ] );
+    models[ 'tag' ] = Mtag;
+    models[ 'note' ] = Mnote;
+    models[ 'tags' ] = CLtag;
+    models[ 'notes' ] = CLnote;
+    models[ 'user' ] = Muser;
+
+})( window[ 'freenote' ] );
  

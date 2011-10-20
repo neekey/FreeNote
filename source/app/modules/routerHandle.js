@@ -1,6 +1,5 @@
 var router = require( './appRouter' ),
 	ajaxCheck = require( './ajaxCheck' ),
-	Mh = require( './mongoHandle' ),
 	auth = require( './auth' ),
 	Emit = require( 'events' ).EventEmitter,
     errorConf = _freenote_cfg.error;

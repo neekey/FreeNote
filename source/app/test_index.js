@@ -98,5 +98,15 @@ app.get( '/unittest/touch_test', function( req, res ){
     });
 });
 
+// ====== note handle local ======
+app.get( '/unittest/notehandlelocal', function( req, res ){
+
+    res.render( 'note_handle_local/index.jade', {
+        layout: false,
+        title: 'note handle test',
+        js: [ '/note_handle_local/localstorage.js', '/models/user.js', '/models/sync.js', '/note_handle_local/localstorage.js', '/note_handle_local/index.js' ]
+    });
+});
+
 
 app.listen( 2222 );

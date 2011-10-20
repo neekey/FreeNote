@@ -2,7 +2,7 @@
  * 权限，登陆，登出等
  */
 var Msh = require( './mongoSessionHandle' ),
-	Mh = require( './mongoHandle' ),
+	Mh = require( './mongoUserHandle' ),
 	Sh = require( './sessionHandle' ),
     Ch = require( './cookieHandle' ),
     errorConf = _freenote_cfg.error;
