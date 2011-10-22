@@ -9,6 +9,28 @@ APP[ 'mods' ][ 'touch' ] = {
         dom.addEventListener( 'touchend', fn, false );
     },
 
+    tab: function( dom, fn ){
+
+        var moved = false;
+        dom.addEventListener( 'touchstart', function(){
+
+            moved = false;
+        }, false );
+
+        dom.addEventListener( 'touchmove', function(){
+
+            moved = true;
+        }, false );
+
+        dom.addEventListener( 'touchend', function(){
+
+            if( !moved ){
+
+                fn.apply( this, arguments );
+            }
+        }, false );
+    },
+
     drag: function( trigger, mover, options ){
 
         if( trigger._removeDrag ) return;
