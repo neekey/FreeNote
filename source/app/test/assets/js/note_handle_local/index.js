@@ -44,7 +44,7 @@
 
     $( document ).ready(function(){
 
-        var iptAdd = $( '#J_ipt-add'),
+        var iptAdd = $( '#J_ipt-add' ),
             btnAdd = $( '#J_btn-add' );
         noteListCon = $( '#J_note-list' );
 

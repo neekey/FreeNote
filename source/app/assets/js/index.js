@@ -1,30 +1,71 @@
+(function( APP ){
+
+var TOUCH = APP.mods.touch,
+    TRANS = APP.mods.transform;
+
 $( document ).ready(function(){
 
     var toggleHandle = $( '#J_toggle-handle' ),
-        toolCon = $( '#J_tool-con' );
+        toolCon = $( '#J_tool-con' ),
+        noteItem = $( '#J_note-item' ),
+        notesStage = $( '#J_notes-stage' );
 
-    /*
-    toggleHandle.bind( 'click', function(){
+    var stageW = parseInt( notesStage.css( 'width' ) ),
+        stageH = parseInt( notesStage.css( 'height' ) );
 
-        if( toolCon.hasClass( 'unfold' ) ){
-            toolCon.removeClass( 'unfold' ).addClass( 'fold' );
-        }
-        else {
-            toolCon.removeClass( 'fold' ).addClass( 'unfold' );
-        }
-    }); */
+    TRANS.set( notesStage[ 0 ], 'translate', {
+        x: -parseInt( stageW / 2 ),
+        y: -parseInt( stageH / 2 )
+    });
+
 
     function touchStart( event ) {
 
         if( toolCon.hasClass( 'unfold' ) ){
             toolCon.removeClass( 'unfold' ).addClass( 'fold' );
+            toggleHandle.removeClass( 'toggle-up').addClass( 'toggle-down');
         }
         else {
             toolCon.removeClass( 'fold' ).addClass( 'unfold' );
+            toggleHandle.removeClass( 'toggle-down').addClass( 'toggle-up');
+
         }
     }
 
-    toggleHandle[ 0 ].addEventListener( 'touchstart', touchStart, false );
+    // toggleHandle[ 0 ].addEventListener( 'touchstart', touchStart, false );
+    //TOUCH.click( toggleHandle[ 0 ], touchStart );
+    //toggleHandle.bind( 'click', touchStart );
+    TOUCH.drag( toggleHandle[ 0 ], toolCon[ 0 ], {
+        dir: 'y',
+        move: function(){
+            //alert( 'move');
+        },
+        touch: function(){
+            //alert( 'touch');
+        },
+        end: function(){
+            
+            toolCon[ 0 ].style.webkitTransform = '';
+
+            if( toolCon.hasClass( 'unfold' ) ){
+
+                toolCon.removeClass( 'unfold' ).addClass( 'fold' );
+                toggleHandle.removeClass( 'toggle-up').addClass( 'toggle-down');
+            }
+            else {
+
+                toolCon.removeClass( 'fold' ).addClass( 'unfold' );
+                toggleHandle.removeClass( 'toggle-down').addClass( 'toggle-up');
+            }
+        }
+    } );
+
+    TOUCH.drag( noteItem[ 0 ], noteItem[ 0 ] );
+    TOUCH.drag( notesStage[ 0 ], notesStage[ 0 ], {
+        move: function(){
+        }
+    });
+
 
     /*
     var Mnote = Backbone.Model.extend({
@@ -147,3 +188,4 @@ $( document ).ready(function(){
     }))();
     */
 });
+})( window[ 'freenote' ] );

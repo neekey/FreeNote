@@ -33,7 +33,8 @@ app.get( '/*.(jpg|gif|png)', function( req, res ){
 
 app.get( '/', function( req, res ){
     res.render( 'index.jade', {
-        layout: false
+        layout: false,
+        js: [ 'touch.js' ]
     });
 });
 

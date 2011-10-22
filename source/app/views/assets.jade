@@ -1,12 +1,28 @@
 link( rel="stylesheet", type="text/css", href="/index.css" )
+- if( css ){
+-   for( i = 0; css[ i ]; i++ ){
+        link( href="#{css[ i ]}", type="test/css", rel="stylesheet" )
+-   }
+- }
+
 script( src="/core/underscore.js" )
 script( src="/core/jquery.js" )
 script( src="/core/backbone.js" )
+script( src="config.js" )
 script( src="/localstorage.js" )
-script( src="/index.js" )
-
-//- for register test
-
-script( src="/config.js" )
 script( src="/models/user.js" )
+script( src="/models/sync.js" )
+script( src="/cssTransform.js" )
+
+
+- var js = js || [], css = css || [], i;
+- if( js ){
+-   for( i = 0; js[ i ]; i++ ){
+        script( src="#{js[ i ]}" )
+-   }
+- }
+
+
+
+script( src="/index.js" )
 

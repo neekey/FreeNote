@@ -2,7 +2,7 @@
 // persistence. Models are given GUIDS, and saved into a JSON object. Simple
 // as that.
 
-(function() {
+(function( APP ) {
 
     // Generate four random hex digits.
     function S4() {
@@ -105,6 +105,6 @@
         }
     };
 
-    window[ 'localStorageStore' ] = store;
-})();
+    APP[ 'mods' ][ 'localStorageStore' ] = Store;
+})( window[ 'freenote' ] );
 

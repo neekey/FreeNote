@@ -1,16 +1,20 @@
 body
     #header
     #content
-        #J_tool-con.tool-con.unfold
+        #J_tool-con.tool-con.fold
             .setting-con
             .search-con
-            #J_toggle-handle.toggle-handle
+            #J_toggle-handle.toggle-handle.toggle-down
         .notes-con
             #J_notes-stage
                 ul.note-list
                     li#J_note-item.note-item
-                        .content
-                        .tags
+                        .content my first note
+                        .tags mmusic study
         #J_sync-tip
+        #J_note-form
+            input( type="text", placeholder="note" )#J_note-content
+            input( type="text", placeholder="tag" )#J_note-tag
+            input( type="button", value="添加" )#J_note-add
     #footer
         .note-update-con
