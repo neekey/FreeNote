@@ -47,7 +47,12 @@
 
         // Retrieve a model from `this.data` by id.
         find: function(model) {
-            return this.data[model.id];
+            if( model.id ){
+                return this.data[model.id];
+            }
+            else {
+                return _.values(this.data)[ 0 ];
+            }
         },
 
         // Return the array of all models currently in storage.
@@ -73,7 +78,7 @@
 
         switch (method) {
             case "read":
-                resp = model.id ? store.find(model) : store.findAll();
+                resp = model.id ? store.find(model) : model.cid ? store.find( model ) : store.findAll();
                 break;
             case "create":
                 resp = store.create(model);
@@ -94,10 +99,10 @@
                     model.trigger( 'addNote', model );
                     break;
                 case "update":
-                    resp = store.update( 'updateNote', model );
+                    model.trigger( 'updateNote', model );
                     break;
                 case "delete":
-                    resp = store.destroy( 'delNote', model );
+                    model.trigger( 'delNote', model );
                     break;
             }
         } else {
