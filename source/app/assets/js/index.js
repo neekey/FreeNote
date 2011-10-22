@@ -10,7 +10,9 @@ $( document ).ready(function(){
     var toggleHandle = $( '#J_toggle-handle' ),
         toolCon = $( '#J_tool-con' ),
         noteItem = $( '#J_note-item' ),
-        notesStage = $( '#J_notes-stage' );
+        notesStage = $( '#J_notes-stage' ),
+        btnCancel = $( '#J_note-cancel' ),
+        noteForm = $( '#J_note-form' );
 
     var stageW = parseInt( notesStage.css( 'width' ) ),
         stageH = parseInt( notesStage.css( 'height' ) );
@@ -68,6 +70,19 @@ $( document ).ready(function(){
         }
     });
 
+    TOUCH.tab( notesStage[ 0 ], function(){
+
+
+        noteForm.addClass( 'note-from-show' );
+        noteForm.removeClass( 'note-form-hide' );
+        
+    });
+
+    TOUCH.click( btnCancel[ 0 ], function(){
+
+        noteForm.addClass( 'note-form-hide' );
+        noteForm.removeClass( 'note-from-show' );
+    });
     var ModelTest = MODS.modelTest;
     ModelTest();
 });

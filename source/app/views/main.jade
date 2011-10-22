@@ -12,9 +12,16 @@ body
                         .content my first note
                         .tags mmusic study
         #J_sync-tip
-        #J_note-form
-            input( type="text", placeholder="note" )#J_note-content
-            input( type="text", placeholder="tag" )#J_note-tag
-            input( type="button", value="添加" )#J_note-add
+        #J_note-form.note-form.note-form-hide
+            p.note-content-con
+                textarea( type="text", placeholder="note" )#J_note-content.note-content
+            p.note-tag-con
+                input( type="text", placeholder="tag" )#J_note-tag.note-tag
+            p.note-btn
+                input( type="button", value="添加" )#J_note-add.note-add
+                input( type="button", value="取消" )#J_note-cancel.note-cancel
+        #J_views_tmp
+            script( type="text/html" )#J_note-item-tmp
+
     #footer
         .note-update-con
