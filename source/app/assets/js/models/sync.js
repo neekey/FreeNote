@@ -17,45 +17,29 @@
             note: null
         },
 
-        localStorage: new MODS.localStorageStore( 'sync' ),
+        localStorage: new MODS.localStorageStore( 'changes' ),
 
-        initailize: function(){
+        initialize: function(){
 
-            var that = this;
 
-            this.set( 'date', Date.now() );
-            this.set( 'id', this.noteModel.get( 'id' ) );
-            this.set( '_id', this.noteModel.get( '_id' ) );
-
-            // bind update
-            this.noteModel.on( 'update', function( m ){
-
-                that.set( 'note', m.toJSON() );
-                that.set( 'date', Date.now() );
-                that.set( 'type', 'update' );
-            });
-
-            // bind destroy
-            this.noteModel.on( 'destroy', function( m ){
-
-                that.set( 'note', m.toJSON() );
-                that.set( 'date', Date.now() );
-                that.set( 'type', 'del' );
-            });
         },
 
         noteUpdate: function( m ){
 
-            this.set( 'note', m.toJSON() );
-            this.set( 'date', Date.now() );
-            this.set( 'type', 'update' );
+            this.set({
+                'note': m.toJSON(),
+                'date': Date.now(),
+                'type': 'update'
+            });
         },
-
+        
         noteDestroy: function( m ){
 
-            this.set( 'note', m.toJSON() );
-            this.set( 'date', Date.now() );
-            this.set( 'type', 'del' );
+            this.set({
+                'note': m.toJSON(),
+                'date': Date.now(),
+                'type': 'del'
+            });
         }
     }),
 
@@ -63,37 +47,12 @@
 
         model: Mchange,
 
-        defaults: {
-            synced: false,
-            notes: null
-        },
+        localStorage: new MODS.localStorageStore( 'changes' ),
 
-        localStorage: new MODS.localStorageStore( 'sync' ),
-
-        initailize: function(){
-
-            // 设置notes为私有变量
-            var Notes = this.get( 'notes' ), that = this;
-            this.set( 'notes', null );
+        initialize: function(){
 
             // 读取已经有的同步表信息
             this.fetch();
-
-            // 设置当笔记发生变动时，自动更新记录到同步表中
-            Notes.bind( 'change', function( m ){
-
-                this.addChange( m, 'update' );
-            }, this );
-
-            Notes.bind( 'add', function( m ){
-
-                this.addChange( m, 'add' );
-            }, this );
-
-            Notes.bind( 'remove', function( m ){
-
-                this.addChange( m, 'del' );
-            }, this );
         },
 
         /**
@@ -105,14 +64,16 @@
 
             if( !m.get( 'syncMarked' ) ){
 
-                m.set( 'syncMarked', true );
+                m.set({ 'syncMarked': true }, {
+                    silent: true
+                });
 
                 var change = this.create({
                     id: m.get( 'id' ),
                     _id: m.get( '_id' ),
                     type: type,
-                    date: Date.noew(),
-                    note: m.toJSON(),
+                    date: Date.now(),
+                    note: m.toJSON()
                 });
 
                 // 绑定变化到Mchange
@@ -120,8 +81,55 @@
                 m.bind( 'destroy', change.noteDestroy, change );
             }
         }
+    }),
+
+    Msync = Backbone.Model.extend({
+
+        defaults: {
+            synced: false,
+            sync: null,
+            notes: null
+        },
+
+        localStorage: new MODS.localStorageStore( 'sync' ),
+
+        initialize: function(){
+
+            // 设置notes为私有变量
+            var Notes = this.get( 'notes' ),
+                Changes = new CLchange(),
+                that = this;
+            this.set({ 'notes': null });
+
+            // 设置当笔记发生变动时，自动更新记录到同步表中
+            Notes.bind( 'change', function( m ){
+
+                this.addChange( m, 'update' );
+            }, Changes );
+
+            Notes.bind( 'add', function( m ){
+
+                this.addChange( m, 'add' );
+            }, Changes );
+
+            Notes.bind( 'remove', function( m ){
+
+                this.addChange( m, 'del' );
+            }, Changes );
+
+            // 实时保存
+            this.bind( 'change', function( m ){
+
+                //this.save();
+            }, this );
+
+            this.fetch();
+            this.save();
+        }
     });
 
+
+    MODELS[ 'sync' ] = Msync;
     MODELS[ 'change' ] = Mchange;
     MODELS[ 'changes' ] = CLchange;
 

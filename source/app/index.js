@@ -25,7 +25,7 @@ app.get( '/*.(js|css)', function( req, res ){
     res.sendfile( "./assets/" + type + req.url );
 });
 
-// js+css files
+// img files
 app.get( '/*.(jpg|gif|png)', function( req, res ){
 
     res.sendfile( "./assets/img" + req.url );

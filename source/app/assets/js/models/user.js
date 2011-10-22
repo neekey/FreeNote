@@ -15,6 +15,13 @@
             'notes': []
         },
 
+        initialize: function(){
+
+            this.bind( 'change', function(){
+                this.save();
+            }, this );
+        },
+
         localStorage: new MODS.localStorageStore( 'tag' ),
         /**
          * 添加笔记记录
@@ -24,7 +31,9 @@
 
             if( _.indexOf( this.get( 'notes' ), id ) < 0 ){
 
-                this.get( 'notes' ).push( id );
+                var notes = _.clone( this.get( 'notes' ) );
+                    notes.push( id );
+                this.set({ notes: notes });
             }
         },
 
@@ -38,7 +47,10 @@
 
             if( index ){
 
-                this.get( 'notes' ).splice( index, 1 );
+                var notes = _.clone( this.get( 'notes' ) );
+                    notes.splice( index, 1 );
+                this.set({ notes: notes });
+                
             }
         }
     }),
@@ -56,7 +68,17 @@
         
         localStorage: new MODS.localStorageStore( 'note' ),
 
-        initailize: function(){
+        initialize: function(){
+
+            this.set({
+                created: Date.now(),
+                updated: Date.now()
+            });
+            this.bind( 'change', function(){
+
+                this.set({ updated: Date.now() });
+                this.save();
+            }, this );
         }
     }),
 
@@ -70,8 +92,12 @@
 
         initialize: function(){
 
-            var Notes = this.get( 'notes' );
-            this.set( 'notes', null );
+            this.fetch();
+        },
+
+        init: function(){
+
+            var Notes = this.notes;
 
             // 绑定笔记的tags信息的变化，自动更新到tags中去
             Notes.bind( 'change:tags', function( m, newTags ){
@@ -82,7 +108,16 @@
 
                 this.addNote( m.get( 'id' ), addTags );
                 this.delNote( m.get( 'id' ), delTags );
+            }, this );
 
+            Notes.bind( 'add', function( m ){
+
+                this.addNote( m.get( 'id' ), m.get( 'tags' ) );
+            }, this );
+
+            Notes.bind( 'remove', function( m ){
+
+                this.delNote( m.get( 'id' ), m.get( 'tags' ) );
             }, this );
         },
 
@@ -99,7 +134,7 @@
 
             for( i = 0; i < len; i++ ){
 
-                if( tags[ i ].value === name ){
+                if( tags[ i ].get( 'value' ) === name ){
 
                     return tags[ i ];
                 }
@@ -127,9 +162,11 @@
                 // 若标签不存在 则添加一个
                 else {
 
-                    this.create({
+                    tag = this.create({
                         value: name
                     });
+
+                    tag.addNote( noteId );
                 }
             }
         },
@@ -166,17 +203,18 @@
         initialize: function(){
 
             // 创建笔记集合对应的标签集合
-            var Tags = new CLtag({
-                notes: this
-            });
+            var Tags = new CLtag();
+                Tags.notes = this;
+                Tags.init();
 
             // 同步表
-            var Sync = new APP[ 'models' ][ 'changes' ]({
+            var Sync = new MODELS[ 'sync' ]({
                 notes: this
             });
 
             // 读取已经有的笔记信息
             this.fetch();
+
         }
     }),
 
@@ -189,7 +227,7 @@
 
         urlRoot: '/res/user/',
 
-        initailize: function(){
+        initialize: function(){
         }
     });
 
