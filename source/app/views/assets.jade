@@ -9,11 +9,14 @@ script( src="/core/underscore.js" )
 script( src="/core/jquery.js" )
 script( src="/core/backbone.js" )
 script( src="config.js" )
-script( src="/localstorage.js" )
+script( src="/mods/localstorage.js" )
 script( src="/models/user.js" )
 script( src="/models/sync.js" )
-script( src="/cssTransform.js" )
+script( src="/mods/cssTransform.js" )
+script( src="/mods/touch.js" )
+script( src="/mods/tplHandle.js" )
 script( src="/modelsTest.js" )
+
 
 
 - var js = js || [], css = css || [], i;
@@ -22,8 +25,6 @@ script( src="/modelsTest.js" )
         script( src="#{js[ i ]}" )
 -   }
 - }
-
-
 
 script( src="/index.js" )
 

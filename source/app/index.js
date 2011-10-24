@@ -31,10 +31,15 @@ app.get( '/*.(jpg|gif|png)', function( req, res ){
     res.sendfile( "./assets/img" + req.url );
 });
 
+// tpl files
+app.get( '/*.tpl?', function( req, res ){
+
+    res.sendfile( "./assets/js/tpls" + req.url );
+});
+
 app.get( '/', function( req, res ){
     res.render( 'index.jade', {
-        layout: false,
-        js: [ 'touch.js' ]
+        layout: false
     });
 });
 
