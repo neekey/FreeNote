@@ -20,17 +20,24 @@ TPL.require( [ 'noteForm' ], function(){
             
             this.el = $( TPL.get( 'noteForm' ) );
             this.content = this.$( '#J_note-content' );
-            this.tag = this.$( '#J_note-tag' );
-            this.close = this.$( '#J_note-close' );
+            this.tags = this.$( '#J_note-tag' );
+            this.btnClose = this.$( '#J_note-close' );
+            this.btnAdd = this.$( '#J_note-add' );
+
+            this.el.appendTo( '#content' );
 
             this.render();
 
-            // MODEL 数据变化时
-            this.model.bind( 'change', this.render, this );
-            // MODEL 变更时
+            // MODEL
             this.bind( 'modelChange', this.render, this );
-            // 绑定关闭事件
-            TOUCH.click( this.close[ 0 ], this.hide, this );
+            // 
+            TOUCH.click( this.btnClose[ 0 ], function(){
+
+                this.hide();
+                this.removeModel();
+            }, this );
+
+            TOUCH.click( this.btnAdd[ 0 ], this._noteAdd, this );
 
         },
 
@@ -45,12 +52,12 @@ TPL.require( [ 'noteForm' ], function(){
             if( model ){
 
                 this.content.val( model.get( 'content' ) );
-                this.tag.val( model.get( 'tag' ) );
+                this.tags.val( model.get( 'tags' ) );
             }
             else {
 
                 this.content.val('');
-                this.tag.val('');
+                this.tags.val('');
             }
         },
 
@@ -58,6 +65,7 @@ TPL.require( [ 'noteForm' ], function(){
 
             this.model = m;
             this.trigger( 'modelChange' );
+            this._modelInit();
         },
 
         removeModel: function(){
@@ -65,6 +73,38 @@ TPL.require( [ 'noteForm' ], function(){
             this.model = null;
             this.trigger( 'modelChange' );
         },
+
+        _modelInit: function(){
+
+            if( this.model ){
+
+                this.model.bind( 'change', this.render, this );
+            }
+        },
+
+        editNote: function( model ){
+
+            this.setModel( model );
+            this._editInit();
+            this.show();
+        },
+
+        _editInit: function(){
+
+            this.btnAdd.hide();
+        },
+
+        createNote: function(){
+
+            this._createInit();
+            this.show();
+        },
+
+        _createInit: function(){
+
+            this.btnAdd.show();
+        },
+
 
         show: function(){
 
@@ -75,6 +115,32 @@ TPL.require( [ 'noteForm' ], function(){
         hide: function(){
             this.el.removeClass( 'note-form-show' );
             this.el.addClass( 'note-form-hide' );
+        },
+
+        _noteAdd: function(){
+
+            if( this.formCheck() ){
+                this.trigger( 'noteAdd', {
+                    content: this.content.val(),
+                    tags: this.tags.val().split( /\s+/ )
+                });
+
+                this.hide();
+            }
+        },
+
+        formCheck: function(){
+
+            var content = this.content.val(),
+                tags = this.tags.val();
+
+            if( content === '' || tags === '' ){
+
+                return false;
+            }
+            else {
+                return true;
+            }
         }
     });
 

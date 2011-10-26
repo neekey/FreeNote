@@ -2,17 +2,34 @@
 
 var MODS = APP.mods,
     MODELS = APP.models,
+    VIEWS = APP.views,
     TOUCH = MODS.touch,
-    TRANS = MODS.transform;
+    TRANS = MODS.transform,
+    SCREEN = MODS.screen,
+    TPL = MODS.tpl;
+
+var app = function(){
 
 $( document ).ready(function(){
 
     var toggleHandle = $( '#J_toggle-handle' ),
         toolCon = $( '#J_tool-con' ),
-        noteItem = $( '#J_note-item' ),
-        notesStage = $( '#J_notes-stage' ),
-        btnCancel = $( '#J_note-cancel' ),
-        noteForm = $( '#J_note-form' );
+        notesStage = $( '#J_notes-stage' );
+
+    // 设置noteStage
+    var MnoteStage = new MODELS[ 'noteStage' ],
+        VnoteStage = new VIEWS[ 'noteStage' ]({
+            model: MnoteStage,
+            el: notesStage
+        });
+
+    TOUCH.drag( notesStage[ 0 ], notesStage[ 0 ], {
+        
+        move: function(){
+
+            VnoteStage.trigger( 'move' );
+        }
+    });
 
     var stageW = parseInt( notesStage.css( 'width' ) ),
         stageH = parseInt( notesStage.css( 'height' ) );
@@ -36,9 +53,6 @@ $( document ).ready(function(){
         }
     }
 
-    // toggleHandle[ 0 ].addEventListener( 'touchstart', touchStart, false );
-    //TOUCH.click( toggleHandle[ 0 ], touchStart );
-    //toggleHandle.bind( 'click', touchStart );
     TOUCH.drag( toggleHandle[ 0 ], toolCon[ 0 ], {
         dir: 'y',
         move: function(){
@@ -64,26 +78,46 @@ $( document ).ready(function(){
         }
     } );
 
-    TOUCH.drag( noteItem[ 0 ], noteItem[ 0 ] );
-    TOUCH.drag( notesStage[ 0 ], notesStage[ 0 ], {
-        move: function(){
-        }
-    });
+
+
+    // noteForm veiw test
+    Vnote = new VIEWS[ 'noteForm' ](),
+        Mnotes = new MODELS[ 'notes' ];
 
     TOUCH.tab( notesStage[ 0 ], function(){
 
-
-        noteForm.addClass( 'note-from-show' );
-        noteForm.removeClass( 'note-form-hide' );
-        
+        Vnote.createNote();
     });
 
-    TOUCH.click( btnCancel[ 0 ], function(){
+    Vnote.bind( 'noteAdd', function( note ){
 
-        noteForm.addClass( 'note-form-hide' );
-        noteForm.removeClass( 'note-from-show' );
+        var noteItem  = new VIEWS[ 'noteItem' ]( {
+            model: Mnotes.create( note ),
+            noteForm: Vnote
+        });
+
+        noteItem.bind( 'noteTouch', function(){
+
+            Vnote.editNote( this.model );
+        });
     });
+
+    (new VIEWS[ 'noteItem' ]( {
+            model: Mnotes.create( { content: 'neekey', tags: [ '1', '2' ] } ),
+            noteForm: Vnote
+        })).bind( 'noteTouch', function(){
+
+            Vnote.editNote( this.model );
+        });
+
+
     var ModelTest = MODS.modelTest;
-    ModelTest();
+    // ModelTest();
 });
+};
+
+TPL.require( [ 'noteForm', 'noteItem' ], function(){
+    app();
+});
+
 })( window[ 'freenote' ] );

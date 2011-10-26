@@ -7,8 +7,6 @@
     </p>
     <p class="note-btn">
         <input type="button" value="添加" id="J_note-add" class="note-add" />
-        <input type="button" value="取消" id="J_note-cancel class="note-cancel" />
-        <input type="button" value="关闭" id="J_note-close class="note-close" />
-
+        <input type="button" value="关闭" id="J_note-close" class="note-close" />
     </p>
 </div>

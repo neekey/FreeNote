@@ -4,12 +4,51 @@ var translateEx = /translate\(([^\)]*)\)/;
 
 APP[ 'mods' ][ 'touch' ] = {
 
+
     click: function( dom, fn, context ){
 
-        dom.addEventListener( 'touchend', fn, false );
+        dom.addEventListener( 'touchend', function(){
+
+            context = context || this;
+
+            fn.apply( context, arguments );
+        }, false );
     },
 
-    tab: function( dom, fn ){
+    dbClick: function( dom, fn, context ){
+
+        var clickCount = 1,
+            clickTime = [],
+            clickInterval = 0;
+
+        dom.addEventListener( 'touchend', function(){
+
+            var interval = 0;
+
+            clickTime[ clickCount - 1 ] = Date.now();
+
+            if( clickCount === 2 ){
+
+                interval = clickTime[ 1 ] - clickTime[ 0 ];
+
+                if( interval < 1500 ){
+                    
+                    context = context || this;
+
+                    fn.apply( context, arguments );
+                }
+
+                clickCount = 0;
+            }
+            else {
+
+                clickCount++;
+            }
+
+        }, false );
+    },
+
+    tab: function( dom, fn, context ){
 
         var moved = false;
         dom.addEventListener( 'touchstart', function(){
@@ -26,7 +65,9 @@ APP[ 'mods' ][ 'touch' ] = {
 
             if( !moved ){
 
-                fn.apply( this, arguments );
+                context = context || this;
+
+                fn.apply( context, arguments );
             }
         }, false );
     },
@@ -34,6 +75,8 @@ APP[ 'mods' ][ 'touch' ] = {
     drag: function( trigger, mover, options ){
 
         if( trigger._removeDrag ) return;
+
+        options = options || {};
 
         var startX, startY, lastX, lastY,
             curX = 0, curY = 0,
