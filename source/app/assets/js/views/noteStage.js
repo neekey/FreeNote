@@ -1,13 +1,11 @@
 /**
  * noteStage view
  */
-(function(){
+(function( APP ){
 
 var MODS = APP.mods,
-    MODELS = APP.models,
     VIEWS = APP.views,
-    TRANS = MODS.transform,
-    SCREEN = MODS.screen;
+    TRANS = MODS.transform;
 
 var VnoteStage = Backbone.View.extend({
 
@@ -17,63 +15,36 @@ var VnoteStage = Backbone.View.extend({
 
         this.model.bind( 'change', this.render, this );
         this.bind( 'move', this.position, this );
+
+        this.render();
     },
 
+    /**
+     * 更具model来更新view
+     */
     render: function(){
         
         var model = this.model.toJSON();
-        this.el.width( model.w );
-        this.el.height( model.h );
+
         TRANS.set( this.el[ 0 ], 'translate', {
             x: model.x,
             y: model.y
         });
     },
 
+    /**
+     * 根据view来更新model（silent set ）
+     */
     position: function(){
 
-        var trans = TRANS.get( this.el[ 0 ], 'translate' ),
-            transX = trans.x,
-            transY = trans.y,
-            model = this.model.toJSON(),
-            screenInfo = SCREEN.info,
-            disX, disY;
+        var trans = TRANS.get( this.el[ 0 ], 'translate' );
 
-        if( transX >= 0 ){
-
-            model.w += transX;
-            model.x = 0;
-        }
-        else {
-
-            disX = ( screenInfo.width - ( model.w + transX ) );
-            if( disX > 0  ){
-
-                model.w += disX;
-            }
-
-            model.x = disX;
-        }
-
-        if( transY >= 0 ){
-
-            model.h += transY;
-            model.y = 0;
-        }
-        else {
-
-            disY = ( screenInfo.height - ( model.h + transY ) );
-            if( disY > 0  ){
-
-                model.h += disY;
-            }
-            model.y = disY;
-        }
-
-        this.model.set( model );
+        this.model.set( trans, {
+            silent: true
+        });
     }
 });
 
 VIEWS[ 'noteStage' ] = VnoteStage;
 
-})()
+})( window[ 'freenote' ] );
