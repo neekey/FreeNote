@@ -16,6 +16,8 @@ TPL.require( [ 'noteForm' ], function(){
 
         initialize: function(){
 
+            var that = this;
+            
             _.extend( this, Backbone.Events );
             
             this.el = $( TPL.get( 'noteForm' ) );
@@ -30,15 +32,17 @@ TPL.require( [ 'noteForm' ], function(){
 
             // MODEL
             this.bind( 'modelChange', this.render, this );
-            // 
-            TOUCH.click( this.btnClose[ 0 ], function(){
 
-                this.hide();
-                this.removeModel();
-            }, this );
+            this.btnClose.tap( function(){
 
-            TOUCH.click( this.btnAdd[ 0 ], this._noteAdd, this );
+                that.hide();
+                that.removeModel();
+            });
 
+            this.btnAdd.tap( function(){
+
+                that._noteAdd();
+            });
         },
 
         events: {
@@ -94,14 +98,18 @@ TPL.require( [ 'noteForm' ], function(){
             this.btnAdd.hide();
         },
 
-        createNote: function(){
+        createNote: function( posInfo ){
 
-            this._createInit();
+            this.posX = posInfo.x;
+            this.posY = posInfo.y;
+            
+            this._createInit( posInfo );
             this.show();
         },
 
         _createInit: function(){
 
+            this.model
             this.btnAdd.show();
         },
 
@@ -115,6 +123,7 @@ TPL.require( [ 'noteForm' ], function(){
         hide: function(){
             this.el.removeClass( 'note-form-show' );
             this.el.addClass( 'note-form-hide' );
+            this.setModel( null );
         },
 
         _noteAdd: function(){
@@ -122,7 +131,9 @@ TPL.require( [ 'noteForm' ], function(){
             if( this.formCheck() ){
                 this.trigger( 'noteAdd', {
                     content: this.content.val(),
-                    tags: this.tags.val().split( /\s+/ )
+                    tags: this.tags.val().split( /\s+/ ),
+                    x: this.posX,
+                    y: this.posY
                 });
 
                 this.hide();
