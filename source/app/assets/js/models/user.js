@@ -12,7 +12,9 @@
 
         defaults: {
             'value': '',
-            'notes': []
+            'notes': [],
+            'x': 0,
+            'y': 0
         },
 
         initialize: function(){
@@ -60,6 +62,9 @@
         defaults: {
             'content': '',
             'tags': [],
+            // 记录笔记在桌面上的显示位置
+            'x': 0,
+            'y': 0,
             'created': '',
             'updated': '',
             // 用于标识，该笔记是否在同步表里已经有相关记录
