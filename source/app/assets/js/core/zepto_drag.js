@@ -6,11 +6,10 @@
 
     var translateEx = /translate\(([^\)]*)\)/;
 
-    /**
-     * 拖拽
+    /*
      * @param options
-     *  {   dir: 'x' || 'y' || 'xy', // 可以拖拽的方向
-     *      handlers: el || jqEl || array // 用于拖拽的handlers
+     *  {   dir: 'x' || 'y' || 'xy', // 鎷栨嫿鏂瑰悜
+     *      handlers: el || jqEl || array // handlers
      *  }
      */
     $.fn[ 'drag' ] = function( options ){
@@ -45,7 +44,6 @@
             function dragStart( e ) {
 
                 e.preventDefault();
-                e.stopPropagation();
 
                 if ( ! e.touches.length ) return;
 
@@ -72,7 +70,6 @@
             function dragMove( e ){
 
                 e.preventDefault();
-                e.stopPropagation();
 
                 if ( !e.touches.length) return;
 
@@ -111,7 +108,6 @@
             function dragEnd( e ){
 
                 e.preventDefault();
-                e.stopPropagation();
 
                 that.trigger( 'dragEnd' );
             }
