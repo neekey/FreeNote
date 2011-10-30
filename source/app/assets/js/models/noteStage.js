@@ -11,18 +11,12 @@ var MODS = APP.mods,
 var MnoteStage = Backbone.Model.extend({
 
     defaults: {
+        // 记录当前的translate偏移
         x: 0,
         y: 0
     },
 
     initialize: function(){
-
-        var sInfo = SCREEN.info;
-
-        this.set({ 
-            w: sInfo.width,
-            h: sInfo.height
-        });
     }
 });
 
