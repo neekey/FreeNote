@@ -1,18 +1,17 @@
 /**
  * 用于屏幕尺寸等的监测
  */
-(function(){
+(function( APP ){
 
-var MODS = APP.mods,
-    WIN = $( window );
+var MODS = APP.mods;
 
 var screen = {
 
     info: {
-        height: WIN.height(),
-        width: WIN.width()
+        height: document.documentElement.clientHeight,
+        width: document.documentElement.clientWidth
     }
 };
 
 MODS[ 'screen' ] = screen;
-})();
+})( window[ 'freenote' ] );
