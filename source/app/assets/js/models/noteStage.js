@@ -11,12 +11,25 @@ var MODS = APP.mods,
 var MnoteStage = Backbone.Model.extend({
 
     defaults: {
-        // ��¼��ǰ��translateƫ��
+        // stage当前的位置信息
         x: 0,
-        y: 0
+        y: 0,
+        // 是否初始化过（进行默认定位，第一次 ）
+        located: false
     },
 
+    localStorage: new MODS.localStorageStore( 'noteStage' ),
+    
     initialize: function(){
+
+        this.fetch();
+
+        this.bind( 'change', function(){
+
+            this.save({}, { silent: true });
+        }, this );
+        
+        this.save({}, { silent: true })
     }
 });
 
