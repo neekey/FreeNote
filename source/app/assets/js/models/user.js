@@ -81,9 +81,13 @@
             });
             this.bind( 'change', function(){
 
-                this.set({ updated: Date.now() });
-                this.save();
+                this.set({ updated: Date.now() }, { silent: true });
+
+                // 防止死循环...
+                this.save({}, { silent: true } );
             }, this );
+
+            this.save({}, { silent: true } );
         }
     }),
 
@@ -203,7 +207,7 @@
 
         model: Mnote,
 
-        localStorage: new MODS.localStorageStore( 'tag' ),
+        localStorage: new MODS.localStorageStore( 'note' ),
 
         initialize: function(){
 
