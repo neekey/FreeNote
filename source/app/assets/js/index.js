@@ -8,6 +8,7 @@ var MODS = APP.mods,
     SCREEN = MODS.screen,
     TPL = MODS.tpl;
 
+    window[ 'stack' ] = 0;
 var app = function(){
 
 $( document ).ready(function(){
@@ -16,21 +17,9 @@ $( document ).ready(function(){
         toolCon = $( '#J_tool-con' ),
         notesStage = $( '#J_notes-stage' );
 
-    // 设置noteStage
-    var MnoteStage = new MODELS[ 'noteStage' ],
-        VnoteStage = new VIEWS[ 'noteStage' ]({
-            model: MnoteStage,
-            el: notesStage
-        });
+    // ====== noteStage 初始化 ======
 
-    TOUCH.drag( notesStage[ 0 ], notesStage[ 0 ], {
-        
-        move: function(){
-
-            VnoteStage.trigger( 'move' );
-        }
-    });
-
+    // 初始化noteStage的位置
     var stageW = parseInt( notesStage.css( 'width' ) ),
         stageH = parseInt( notesStage.css( 'height' ) );
 
@@ -39,6 +28,18 @@ $( document ).ready(function(){
         y: -parseInt( stageH / 2 )
     });
 
+    // 设置noteStage
+    var MnoteStage = new MODELS[ 'noteStage' ],
+        VnoteStage = new VIEWS[ 'noteStage' ]({
+            model: MnoteStage,
+            el: notesStage
+        });
+
+    // 添加拖拽
+    notesStage.drag();
+
+
+    // ====== 工具面板 ======
 
     function touchStart( event ) {
 
@@ -53,62 +54,79 @@ $( document ).ready(function(){
         }
     }
 
-    TOUCH.drag( toggleHandle[ 0 ], toolCon[ 0 ], {
-        dir: 'y',
-        move: function(){
-            //alert( 'move');
-        },
-        touch: function(){
-            //alert( 'touch');
-        },
-        end: function(){
-            
-            toolCon[ 0 ].style.webkitTransform = '';
+    toggleHandle.tap( function( e ){
+        alert( 'test' );
+    });
 
-            if( toolCon.hasClass( 'unfold' ) ){
+    // 添加设置面板的下拉效果
+    toolCon.drag({
+        handlers: toggleHandle,
+        dir: 'y'
+    });
+    
+    toolCon.bind( 'dragEnd', function(){
 
-                toolCon.removeClass( 'unfold' ).addClass( 'fold' );
-                toggleHandle.removeClass( 'toggle-up').addClass( 'toggle-down');
-            }
-            else {
+        TRANS.set( this, 'translate', { x: 0, y: 0 } );
 
-                toolCon.removeClass( 'fold' ).addClass( 'unfold' );
-                toggleHandle.removeClass( 'toggle-down').addClass( 'toggle-up');
-            }
+        if( toolCon.hasClass( 'unfold' ) ){
+
+            toolCon.removeClass( 'unfold' ).addClass( 'fold' );
+            toggleHandle.removeClass( 'toggle-up').addClass( 'toggle-down');
         }
-    } );
+        else {
+            toolCon.removeClass( 'fold' ).addClass( 'unfold' );
+            toggleHandle.removeClass( 'toggle-down').addClass( 'toggle-up');
+        }
+    });
 
-
-
-    // noteForm veiw test
-    Vnote = new VIEWS[ 'noteForm' ](),
+    // ====== noteForm ======
+    var Vnote = new VIEWS[ 'noteForm' ](),
         Mnotes = new MODELS[ 'notes' ];
+        var notesStr = '';
 
-    TOUCH.tab( notesStage[ 0 ], function(){
+    Mnotes.each(function( note ){
 
-        Vnote.createNote();
+        var noteItem  = new VIEWS[ 'noteItem' ]( {
+            model: note,
+            noteForm: Vnote
+        });
+
+        // 绑定编辑事件
+        noteItem.bind( 'noteTouch', function(){
+
+            Vnote.editNote( this.model );
+        });
+
+        notesStr += JSON.stringify( note.toJSON() );
+    });
+
+    // alert( notesStr );
+    // localStorage.clear();
+
+    // 点击空白 添加笔记
+    notesStage.dbTap( function( e ){
+        
+        var trans = TRANS.get( notesStage[ 0 ], 'translate' );
+
+        Vnote.createNote({
+            x: e.data.pageX - trans.x,
+            y: e.data.pageY - trans.y
+        });
     });
 
     Vnote.bind( 'noteAdd', function( note ){
-
+        
         var noteItem  = new VIEWS[ 'noteItem' ]( {
             model: Mnotes.create( note ),
             noteForm: Vnote
         });
 
+        // 绑定编辑事件
         noteItem.bind( 'noteTouch', function(){
 
             Vnote.editNote( this.model );
         });
     });
-
-    (new VIEWS[ 'noteItem' ]( {
-            model: Mnotes.create( { content: 'neekey', tags: [ '1', '2' ] } ),
-            noteForm: Vnote
-        })).bind( 'noteTouch', function(){
-
-            Vnote.editNote( this.model );
-        });
 
 
     var ModelTest = MODS.modelTest;
@@ -117,6 +135,9 @@ $( document ).ready(function(){
 };
 
 TPL.require( [ 'noteForm', 'noteItem' ], function(){
+
+    //localStorage.clear();
+    // 添加stage的位置信息的保存
     app();
 });
 

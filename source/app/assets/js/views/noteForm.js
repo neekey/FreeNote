@@ -8,6 +8,7 @@ var MODELS = APP.models,
     MODS = APP.mods,
     VIEWS = APP.views,
     TOUCH = MODS.touch,
+    SCREEN = MODS.screen,
     TPL = MODS.tpl;
 
 TPL.require( [ 'noteForm' ], function(){
@@ -16,7 +17,7 @@ TPL.require( [ 'noteForm' ], function(){
 
         initialize: function(){
 
-            var that = this;
+            var that = this, screenInfo = SCREEN.info;
             
             _.extend( this, Backbone.Events );
             
@@ -25,7 +26,7 @@ TPL.require( [ 'noteForm' ], function(){
             this.tags = this.$( '#J_note-tag' );
             this.btnClose = this.$( '#J_note-close' );
             this.btnAdd = this.$( '#J_note-add' );
-
+            
             this.el.appendTo( '#content' );
 
             this.render();

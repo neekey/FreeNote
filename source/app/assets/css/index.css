@@ -72,6 +72,9 @@ input {
                         overflow: hidden;
                         border-radius: 5px;
                         background: #9acd32;
+                        position: absolute;
+                        top: 0;
+                        left: 0;
                     }
         #J_sync-tip {
             height: 10%;
