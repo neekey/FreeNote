@@ -16,7 +16,7 @@ var Vnote = Backbone.View.extend({
 
     initialize: function(){
 
-        var screenInfo = SCREEN.info;
+        var screenInfo = SCREEN.info, that = this;
 
         this.el = $( TPL.get( 'noteItem' ) );
 
@@ -36,15 +36,20 @@ var Vnote = Backbone.View.extend({
         this.model.bind( 'change:tags', this.render, this );
         this.model.bind( 'change:x', this.position, this );
         this.model.bind( 'change:y', this.position, this );
-        this.bind( 'move', this.render, this );
 
         // 添加双击触发
-        TOUCH.dbClick( this.el[ 0 ], function(){
-            this.trigger( 'noteTouch' );
-        }, this );
+        this.el.doubleTap( function( e ){
+
+            e.stopPropagation();
+            that.trigger( 'noteTouch' );
+        });
 
         // 添加拖拽
-        TOUCH.drag( this.el[ 0 ], this.el[ 0 ] );
+        this.el.drag();
+        this.el.bind( 'dragEnd', function( e ){
+            e.stopPropagation();
+            that.render();
+        });
 
         // 加入到dom树中
         this.el.appendTo( this.noteList );
@@ -73,6 +78,8 @@ var Vnote = Backbone.View.extend({
         this.model.set( trans, {
             silent: true
         });
+
+        this.model.save({}, { silent: true });
     },
 
     /**
