@@ -4,10 +4,8 @@
 
 (function( APP ){
 
-var MODELS = APP.models,
-    MODS = APP.mods,
+var MODS = APP.mods,
     VIEWS = APP.views,
-    TOUCH = MODS.touch,
     SCREEN = MODS.screen,
     TPL = MODS.tpl;
 
@@ -26,6 +24,7 @@ TPL.require( [ 'noteForm' ], function(){
             this.tags = this.$( '#J_note-tag' );
             this.btnClose = this.$( '#J_note-close' );
             this.btnAdd = this.$( '#J_note-add' );
+            this.btnSave = this.$( '#J_note-save' );
             
             this.el.appendTo( '#content' );
 
@@ -35,7 +34,7 @@ TPL.require( [ 'noteForm' ], function(){
             this.bind( 'modelChange', this.render, this );
 
             this.btnClose.tap( function(){
-
+                
                 that.hide();
                 that.removeModel();
             });
@@ -44,6 +43,13 @@ TPL.require( [ 'noteForm' ], function(){
 
                 that._noteAdd();
             });
+
+            this.btnSave.tap( function(){
+
+                that._noteSave();
+            });
+
+            this.hide();
         },
 
         events: {
@@ -97,6 +103,7 @@ TPL.require( [ 'noteForm' ], function(){
         _editInit: function(){
 
             this.btnAdd.hide();
+            this.btnSave.show();
         },
 
         createNote: function( posInfo ){
@@ -111,19 +118,19 @@ TPL.require( [ 'noteForm' ], function(){
         _createInit: function(){
 
             this.model
+            this.btnSave.hide();
             this.btnAdd.show();
         },
 
 
         show: function(){
 
-            this.el.removeClass( 'note-form-hide' );
-            this.el.addClass( 'note-form-show' );
+            this.el.transform( 'anim', { scale: 1 }, 0.2, 'linear' );
         },
 
         hide: function(){
-            this.el.removeClass( 'note-form-show' );
-            this.el.addClass( 'note-form-hide' );
+
+            this.el.transform( 'anim', { scale: 0 }, 0.2, 'linear' );
             this.setModel( null );
         },
 
@@ -136,6 +143,21 @@ TPL.require( [ 'noteForm' ], function(){
                     x: this.posX,
                     y: this.posY
                 });
+
+                this.hide();
+            }
+        },
+
+        _noteSave: function(){
+
+            if( this.formCheck() ){
+
+                this.model.set({
+                    content: this.content.val(),
+                    tags: this.tags.val().split( /\s+/ )
+                });
+
+                this.trigger( 'noteSave', this.model );
 
                 this.hide();
             }
