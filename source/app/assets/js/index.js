@@ -33,43 +33,7 @@ $( document ).ready(function(){
 
     // ====== 工具面板 ======
 
-    function touchStart( event ) {
-
-        if( toolCon.hasClass( 'unfold' ) ){
-            toolCon.removeClass( 'unfold' ).addClass( 'fold' );
-            toggleHandle.removeClass( 'toggle-up').addClass( 'toggle-down');
-        }
-        else {
-            toolCon.removeClass( 'fold' ).addClass( 'unfold' );
-            toggleHandle.removeClass( 'toggle-down').addClass( 'toggle-up');
-
-        }
-    }
-
-    toggleHandle.tap( function( e ){
-        alert( 'test' );
-    });
-
-    // 添加设置面板的下拉效果
-    toolCon.drag({
-        handlers: toggleHandle,
-        dir: 'y'
-    });
-    
-    toolCon.bind( 'dragEnd', function(){
-
-        TRANS.set( this, 'translate', { x: 0, y: 0 } );
-
-        if( toolCon.hasClass( 'unfold' ) ){
-
-            toolCon.removeClass( 'unfold' ).addClass( 'fold' );
-            toggleHandle.removeClass( 'toggle-up').addClass( 'toggle-down');
-        }
-        else {
-            toolCon.removeClass( 'fold' ).addClass( 'unfold' );
-            toggleHandle.removeClass( 'toggle-down').addClass( 'toggle-up');
-        }
-    });
+    var VtoolMenu = new VIEWS[ 'toolMenu' ];
 
     // ====== noteForm ======
     var Vnote = new VIEWS[ 'noteForm' ](),
