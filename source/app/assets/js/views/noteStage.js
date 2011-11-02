@@ -4,8 +4,7 @@
 (function( APP ){
 
 var MODS = APP.mods,
-    VIEWS = APP.views,
-    TRANS = MODS.transform;
+    VIEWS = APP.views;
 
 var VnoteStage = Backbone.View.extend({
 
