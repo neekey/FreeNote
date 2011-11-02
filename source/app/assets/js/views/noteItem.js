@@ -38,7 +38,7 @@ var Vnote = Backbone.View.extend({
         this.model.bind( 'change:y', this.position, this );
 
         // 添加双击触发
-        this.el.doubleTap( function( e ){
+        this.el.tap( function( e ){
 
             e.stopPropagation();
             that.trigger( 'noteTouch' );
