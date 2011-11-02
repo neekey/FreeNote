@@ -73,7 +73,7 @@ var Vnote = Backbone.View.extend({
         this.tags.text( tag );
 
         // 根据当前translate来更新model
-        var trans = TRANS.get( this.el[ 0 ], 'translate' );
+        var trans = this.el.transform( 'get', 'translate' );
 
         this.model.set( trans, {
             silent: true
@@ -90,10 +90,7 @@ var Vnote = Backbone.View.extend({
         var x = this.model.get( 'x' ),
             y = this.model.get( 'y' );
 
-        TRANS.set( this.el[ 0 ], 'translate', {
-            x: x,
-            y: y
-        });
+        this.el.transform( 'set', { translateX: x, translateY: y } );
     },
 
     edit: function(){

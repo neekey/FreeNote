@@ -31,6 +31,9 @@ var VnoteStage = Backbone.View.extend({
             this.iniLocate();
             this.model.set({ located: true } );
         }
+
+        // 添加拖拽
+        this.el.drag();
     },
 
     iniLocate: function(){
@@ -45,7 +48,7 @@ var VnoteStage = Backbone.View.extend({
      */
     render: function(){
 
-        var trans = TRANS.get( this.el[ 0 ], 'translate' );
+        var trans = this.el.transform( 'get', 'translate' );
 
         this.model.set( trans, {
             silent: true
@@ -61,10 +64,7 @@ var VnoteStage = Backbone.View.extend({
 
         var model = this.model.toJSON();
 
-        TRANS.set( this.el[ 0 ], 'translate', {
-            x: model.x,
-            y: model.y
-        });
+        this.el.transform( 'set', { translateX: model.x, translateY: model.y } );
     }
 });
 

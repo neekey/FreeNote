@@ -49,21 +49,13 @@
             if ( ! e.touches.length ) return;
 
             var touch = e.touches[0],
-                webkitTransform = that[ 0 ].style.webkitTransform,
-                lastArr = translateEx.exec( webkitTransform );
-
-            if( lastArr ){
-                lastArr = lastArr[ 1 ].split( ',' );
-            }
-            else {
-                lastArr = [ 0, 0 ];
-            }
+                translateInfo = that.transform( 'get', 'translate' );
 
             startX = touch.pageX;
             startY = touch.pageY;
 
-            lastX = parseInt( lastArr[ 0 ] );
-            lastY = parseInt( lastArr[ 1 ] );
+            lastX = translateInfo.x;
+            lastY = translateInfo.y;
 
             that.trigger( 'dragStart' );
         }
@@ -76,32 +68,21 @@
             if ( !e.touches.length) return;
 
             var touch = e.touches[0];
-                webkitTransform = that[ 0 ].style.webkitTransform,
-                translateStr = 'translate(';
 
             curX = touch.pageX - startX + lastX;
             curY = touch.pageY - startY + lastY;
 
             if( dragDir === 'xy' ){
 
-                translateStr += curX + 'px, ' + curY + 'px)';
+                that.transform( 'set', { translateX: curX, translateY: curY } );
             }
             else if( dragDir === 'x' ){
 
-                translateStr += curX + 'px, 0px )';
+                that.transform( 'set', { translateX: curX } );
             }
             else {
 
-                translateStr += '0px, ' + curY + 'px)';
-            }
-
-            if( translateEx.test( webkitTransform ) ){
-
-                that[ 0 ].style.webkitTransform = webkitTransform.replace( translateEx, translateStr );
-            }
-            else {
-
-                that[ 0 ].style.webkitTransform += translateStr;
+                that.transform( 'set', { translateY: curY } );
             }
 
             that.trigger( 'dragMove' );

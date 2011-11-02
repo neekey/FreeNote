@@ -23,20 +23,12 @@ $( document ).ready(function(){
     var stageW = parseInt( notesStage.css( 'width' ) ),
         stageH = parseInt( notesStage.css( 'height' ) );
 
-    TRANS.set( notesStage[ 0 ], 'translate', {
-        x: -parseInt( stageW / 2 ),
-        y: -parseInt( stageH / 2 )
-    });
-
     // 设置noteStage
     var MnoteStage = new MODELS[ 'noteStage' ],
         VnoteStage = new VIEWS[ 'noteStage' ]({
             model: MnoteStage,
             el: notesStage
         });
-
-    // 添加拖拽
-    notesStage.drag();
 
 
     // ====== 工具面板 ======
@@ -136,7 +128,7 @@ $( document ).ready(function(){
 
 TPL.require( [ 'noteForm', 'noteItem' ], function(){
 
-    //localStorage.clear();
+    // localStorage.clear();
     // 添加stage的位置信息的保存
     app();
 });
