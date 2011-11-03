@@ -11,7 +11,7 @@ var VnoteStage = Backbone.View.extend({
 
     initialize: function(){
 
-        var that = this;
+        var that = this, screenInfo = SCREEN.info;
 
         _.extend( this, Backbone.Events );
 
@@ -34,6 +34,16 @@ var VnoteStage = Backbone.View.extend({
 
         // 添加拖拽
         this.el.drag();
+
+        // 设置parent的宽高
+        this.el.parent().width( screenInfo.width );
+        this.el.parent().height( screenInfo.height );
+        $( document.documentElement ).height( screenInfo.height );
+        $( document.documentElement ).width( screenInfo.width );
+        $( document.body ).height( screenInfo.height );
+        $( document.body ).width( screenInfo.width );
+        
+
     },
 
     iniLocate: function(){
@@ -67,6 +77,24 @@ var VnoteStage = Backbone.View.extend({
         this.el.transform( 'set', { translateX: model.x, translateY: model.y } );
     },
 
+    show: function(){
+
+        alert( 'showe' );
+        var that = this;
+        //this.el.show();
+        this.el.transform( 'anim', { scale: 1 }, 0.2, 'linear', function(){
+            alert( that.el.css( 'webkitTransform') );
+        });
+
+    },
+
+    hide: function(){
+
+        //this.el.hide();
+        this.el.transform( 'anim', { scale: 0 }, 0.2 );
+
+    },
+
     /**
      * 设置noteStage的位置偏移量
      * @param x
@@ -86,7 +114,6 @@ var VnoteStage = Backbone.View.extend({
         */
 
         this.el.transform( 'set', { translateX: x, translateY: y } );
-        this.render();
 
     },
 

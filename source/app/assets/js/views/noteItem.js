@@ -2,6 +2,8 @@
  * configuration
  */
 
+//todo 在render和position中添加位置的限制（不能超过stage的区域）
+
 (function( APP ){
 
 var MODELS = APP.models,

@@ -21,7 +21,7 @@ input {
             background: url(tool_bg.jpg);
             position: fixed;
             left: 0px;
-            /* top: -100%; */
+            top: -100%;
             border-radius: 10px;
             border-top-left-radius: 0px;
             border-top-right-radius: 0px;
@@ -88,28 +88,16 @@ input {
         .note-form {
             width: 100%;
             height: 100%;
-            position: fixed;
+            position: absolute;
             top: 0px;
             left: 0px;
             z-index: 2;
         }
         .note-form-show {
-            
-            -webkit-animation-name: note-form-show;
-            -webkit-animation-duration: 0.5s;
-            -webkit-animation-iteration-count: 1;
-            -webkit-animation-timing-function: linear;
-            -webkit-animation-delay:0s;
+
         }
         .note-form-hide {
             
-            -webkit-transform: scale(0);
-
-            -webkit-animation-name: note-form-hide;
-            -webkit-animation-duration: 0.2s;
-            -webkit-animation-iteration-count: 1;
-            -webkit-animation-timing-function: linear;
-            -webkit-animation-delay:0s;
         }
             .note-content-con {
                 width: 100%;
@@ -141,44 +129,3 @@ input {
                     height: 80%;
                     border-radius: 20px;
                 }
-
-.unfold{
-    top: 0px;
-    /*让整个行使用x-轴旋转、7秒中的动画、无限次播放以及线性 */
-
-    -webkit-animation-name: tool-con-fold;
-    -webkit-animation-duration: 0.5s;
-    -webkit-animation-iteration-count: 1;
-    -webkit-animation-timing-function: linear;
-    -webkit-animation-delay:0s;
-}
-.fold {
-    top: -100%;
-    /*让整个行使用x-轴旋转、7秒中的动画、无限次播放以及线性 */
-
-    -webkit-animation-name: tool-con-unfold;
-    -webkit-animation-duration: 0.5s;
-    -webkit-animation-iteration-count: 1;
-    -webkit-animation-timing-function: linear;
-    -webkit-animation-delay:0s;
-}
-    /* 定义要调用的动画 */
-@-webkit-keyframes tool-con-fold {
-    /*0% {-webkit-transform: translate(0, -100%);} */
-    100% { -webkit-transform: translate(0, 0); }
-}
-
-@-webkit-keyframes tool-con-unfold {
-    /*0% {-webkit-transform: translate(0, 100%);} */
-    100% { -webkit-transform: translate(0, 0px); }
-}
-
-@-webkit-keyframes note-form-show {
-    0% { -webkit-transform: scale(0);}
-    100%{ -webkit-transform: scale(1); }
-}
-
-@-webkit-keyframes note-form-hide {
-    0% { -webkit-transform: scale(1);}
-    100%{ -webkit-transform: scale(0); }
-}

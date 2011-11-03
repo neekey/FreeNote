@@ -125,11 +125,13 @@ TPL.require( [ 'noteForm' ], function(){
 
         show: function(){
 
+            this.trigger( 'show' );
             this.el.transform( 'anim', { scale: 1 }, 0.2, 'linear' );
         },
 
         hide: function(){
 
+            this.trigger( 'hide' );
             this.el.transform( 'anim', { scale: 0 }, 0.2, 'linear' );
             this.setModel( null );
         },
@@ -157,9 +159,9 @@ TPL.require( [ 'noteForm' ], function(){
                     tags: this.tags.val().split( /\s+/ )
                 });
 
-                this.trigger( 'noteSave', this.model );
-
                 this.hide();
+
+                this.trigger( 'noteSave', this.model );
             }
         },
 

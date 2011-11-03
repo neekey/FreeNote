@@ -13,9 +13,7 @@ var app = function(){
 
 $( document ).ready(function(){
 
-    var toggleHandle = $( '#J_toggle-handle' ),
-        toolCon = $( '#J_tool-con' ),
-        notesStage = $( '#J_notes-stage' );
+    var notesStage = $( '#J_notes-stage' );
 
     // ====== noteStage 初始化 ======
 
@@ -36,7 +34,7 @@ $( document ).ready(function(){
     var VtoolMenu = new VIEWS[ 'toolMenu' ];
 
     // ====== noteForm ======
-    var Vnote = new VIEWS[ 'noteForm' ](),
+    var VnoteForm = new VIEWS[ 'noteForm' ](),
         Mnotes = new MODELS[ 'notes' ];
         var notesStr = '';
 
@@ -44,13 +42,13 @@ $( document ).ready(function(){
 
         var noteItem  = new VIEWS[ 'noteItem' ]( {
             model: note,
-            noteForm: Vnote
+            noteForm: VnoteForm
         });
 
         // 绑定编辑事件
         noteItem.bind( 'noteTouch', function(){
 
-            Vnote.editNote( this.model );
+            VnoteForm.editNote( this.model );
         });
 
         notesStr += JSON.stringify( note.toJSON() );
@@ -60,28 +58,46 @@ $( document ).ready(function(){
     // localStorage.clear();
 
     // 点击空白 添加笔记
-    notesStage.dbTap( function( e ){
+    notesStage.tap( function( e ){
         
-        var trans = TRANS.get( notesStage[ 0 ], 'translate' );
+        var trans = notesStage.transform( 'get', 'translate' );
 
-        Vnote.createNote({
+        VnoteForm.createNote({
             x: e.data.pageX - trans.x,
             y: e.data.pageY - trans.y
         });
     });
 
-    Vnote.bind( 'noteAdd', function( note ){
-        
-        var noteItem  = new VIEWS[ 'noteItem' ]( {
-            model: Mnotes.create( note ),
-            noteForm: Vnote
+    VnoteForm.bind( 'noteAdd', function( note ){
+
+        var newModel = Mnotes.create( note ),
+            noteItem  = new VIEWS[ 'noteItem' ]( {
+            model: newModel,
+            noteForm: VnoteForm
         });
 
         // 绑定编辑事件
         noteItem.bind( 'noteTouch', function(){
 
-            Vnote.editNote( this.model );
+            VnoteForm.editNote( this.model );
         });
+
+        VnoteStage.scrollToNote( noteItem.model );
+    });
+
+    VnoteForm.bind( 'noteSave', function( m ){
+
+        VnoteStage.scrollToNote( m );
+    });
+
+    VnoteForm.bind( 'show', function(){
+
+        VnoteStage.hide();
+    });
+
+    VnoteForm.bind( 'hide', function(){
+
+        VnoteStage.show();
     });
 
 
