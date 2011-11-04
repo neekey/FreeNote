@@ -3,6 +3,8 @@
  * @author Neekey<ni184775761@gmail.com>
  */
 
+//todo 将各model分离出来
+
 (function( APP ){
 
     var MODS = APP.mods,

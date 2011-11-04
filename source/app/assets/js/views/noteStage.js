@@ -101,17 +101,13 @@ var VnoteStage = Backbone.View.extend({
      * @param y
      */
     scrollTo: function( x, y ){
-        /**
-         * @Todo 解决动画scroll出现空白的bug
-         */
-        /*
+        //Todo 解决动画scroll出现空白的bug
         this.el.transform( 'anim', { translateX: trans.x, translateY: trans.y }, 0.5, 'linear', function(){
 
             var trans = that.el.transform( 'get', 'translate' ),
                 scale = that.el.transform( 'get', 'scale' ),
                 rotate = that.el.transform( 'get', 'rotate' );
         });
-        */
 
         this.el.transform( 'set', { translateX: x, translateY: y } );
 
@@ -121,6 +117,7 @@ var VnoteStage = Backbone.View.extend({
      * 滚动stage使得指定note处于屏幕中央
      * @param m
      */
+    //todo 解决定位的问题
     scrollToNote: function( m ){
 
         var model = m.toJSON(),
