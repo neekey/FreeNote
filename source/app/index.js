@@ -18,17 +18,43 @@ Rh.init( app );
 
 // js+css files
 app.get( '/*.(js|css)', function( req, res ){
-    var type = 'js';
-    if( req.url.substring( req.url.length - 3 ) == 'css' ){
-        type = 'css';
+
+    ifFirebug = req.url.substring( 1, 13 );
+    console.log( ifFirebug );
+    if( ifFirebug !== 'firebug-lite' ){
+        var type = 'js';
+        if( req.url.substring( req.url.length - 3 ) == 'css' ){
+            type = 'css';
+        }
+        console.log( "./assets/" + type + req.url );
+        res.sendfile( "./assets/" + type + req.url );
     }
-    res.sendfile( "./assets/" + type + req.url );
+    else {
+
+        res.sendfile( './assets' + req.url );
+    }
+});
+
+// firebug html files
+app.get( '/firebug-lite/*.(html)', function( req, res ){
+
+    res.sendfile( './assets' + req.url );
 });
 
 // img files
 app.get( '/*.(jpg|gif|png)', function( req, res ){
 
-    res.sendfile( "./assets/img" + req.url );
+
+    ifFirebug = req.url.substring( 1, 13 );
+    console.log( ifFirebug );
+    if( ifFirebug !== 'firebug-lite' ){
+        
+        res.sendfile( './assets/img' + req.url );
+    }
+    else {
+
+        res.sendfile( './assets' + req.url );
+    }
 });
 
 // tpl files
