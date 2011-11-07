@@ -3,31 +3,20 @@
 var MODS = APP.mods,
     MODELS = APP.models,
     VIEWS = APP.views,
-    TOUCH = MODS.touch,
-    TRANS = MODS.transform,
     SCREEN = MODS.screen,
     TPL = MODS.tpl;
 
-    window[ 'stack' ] = 0;
 var app = function(){
 
 $( document ).ready(function(){
 
-    var notesStage = $( '#J_notes-stage' );
-
     // ====== noteStage 初始化 ======
-
-    // 初始化noteStage的位置
-    var stageW = parseInt( notesStage.css( 'width' ) ),
-        stageH = parseInt( notesStage.css( 'height' ) );
 
     // 设置noteStage
     var MnoteStage = new MODELS[ 'noteStage' ],
         VnoteStage = new VIEWS[ 'noteStage' ]({
-            model: MnoteStage,
-            el: notesStage
+            model: MnoteStage
         });
-
 
     // ====== 工具面板 ======
 
@@ -36,7 +25,6 @@ $( document ).ready(function(){
     // ====== noteForm ======
     var VnoteForm = new VIEWS[ 'noteForm' ](),
         Mnotes = new MODELS[ 'notes' ];
-        var notesStr = '';
 
     Mnotes.each(function( note ){
 
@@ -50,17 +38,13 @@ $( document ).ready(function(){
 
             VnoteForm.editNote( this.model );
         });
-
-        notesStr += JSON.stringify( note.toJSON() );
     });
 
-    // alert( notesStr );
-    // localStorage.clear();
-
     // 点击空白 添加笔记
-    notesStage.tap( function( e ){
+    VnoteStage.bind( 'tap', function( e ){
         
-        var trans = notesStage.transform( 'get', 'translate' );
+        var stage = VnoteStage.el,
+            trans = stage.transform( 'get', 'translate' );
 
         VnoteForm.createNote({
             x: e.data.pageX - trans.x,
@@ -68,6 +52,7 @@ $( document ).ready(function(){
         });
     });
 
+    // 点击表单的添加
     VnoteForm.bind( 'noteAdd', function( note ){
 
         var newModel = Mnotes.create( note ),
@@ -85,24 +70,28 @@ $( document ).ready(function(){
         VnoteStage.scrollToNote( noteItem.model );
     });
 
+    // 点击表单的保存
     VnoteForm.bind( 'noteSave', function( m ){
-
+        
         VnoteStage.scrollToNote( m );
     });
 
+    // 表单显示
     VnoteForm.bind( 'show', function(){
 
         VnoteStage.hide();
     });
 
+    // 表单隐藏
     VnoteForm.bind( 'hide', function(){
 
         VnoteStage.show();
     });
 
 
-    var ModelTest = MODS.modelTest;
-    // ModelTest();
+    // firebug fix
+    //$( '#FirebugUI' ).css( 'position', 'absolute' );
+    // $( '#fbWindowButtons' ).css( 'right', 'auto' ).css( 'left', '200px' );
 });
 };
 
