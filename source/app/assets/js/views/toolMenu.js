@@ -14,6 +14,7 @@ var VtoolMenu = Backbone.View.extend({
 
         this.el = $( '#J_tool-con' );
         this.handler = $( '#J_toggle-handle' );
+        this.ifFold = true;
 
         // 设置拖拽
         this.el.drag({
