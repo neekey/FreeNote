@@ -64,7 +64,11 @@ app.get( '/*.tpl?', function( req, res ){
 });
 
 app.get( '/', function( req, res ){
+    /*
     res.render( 'index.jade', {
+        layout: false
+    }); */
+    res.render( 'login.jade', {
         layout: false
     });
 });
