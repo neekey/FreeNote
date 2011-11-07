@@ -17,7 +17,9 @@ var app = {
 	/* 所有的模块 */
 	mods: {},
     /* 所有的view */
-    views: {}
+    views: {},
+    /* 所有的router */
+    routers: {}
 };
 
 window[ 'freenote' ] = window[ 'APP' ] = app;
