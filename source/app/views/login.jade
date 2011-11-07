@@ -1,0 +1,33 @@
+include head
+body
+    #J_login-panel.login-panel
+        form#J_login-form
+            p
+                label 用户名
+                input.J_username.required( type="text" )
+                span.form_tip 密码不能为空
+            p
+                label 密码
+                input.J_password.required( type="password" )
+                span.form_tip 密码不能为空
+            p
+                input#J_login( type="button", value="登陆" )
+                a#J_reg-row.reg-now( href="#register" ) 马上注册
+
+    #J_register-panel.register-panel
+        form#J_register-form
+            p
+                label 用户名
+                input.J_username.required( type="text" )
+                span.form_tip 密码不能为空
+            p
+                label 密码
+                input#J_password.J_password.required( type="password" )
+                span.form_tip 密码不能为空
+            p
+                label 确认密码
+                input.J_psword-confirm.required.match( type="password", match="J_password" )
+                span.form_tip 密码不能为空
+            p
+                input#J_register( type="button", value="注册" )
+                a#J_login-row.login-now( href="#login" ) 登陆
