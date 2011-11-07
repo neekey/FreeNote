@@ -12,7 +12,8 @@ var MODELS = APP.models,
     VIEWS = APP.views,
     TOUCH = MODS.touch,
     TRANS = MODS.transform,
-    TPL = MODS.tpl;
+    TPL = MODS.tpl,
+    zIndex = 1;
 
 var Vnote = Backbone.View.extend({
 
@@ -48,13 +49,21 @@ var Vnote = Backbone.View.extend({
 
         // 添加拖拽
         this.el.drag();
+        this.el.bind( 'dragStart', function(){
+
+            that.upToTop();
+        });
         this.el.bind( 'dragEnd', function( e ){
             e.stopPropagation();
             that.render();
         });
 
+        this.upToTop();
+        
         // 加入到dom树中
         this.el.appendTo( this.noteList );
+
+
     },
 
     events: {
@@ -99,6 +108,13 @@ var Vnote = Backbone.View.extend({
 
         var noteForm = this.noteForm;
         noteForm.editNote( this.model );
+    },
+
+    upToTop: function(){
+
+        zIndex++;
+
+        this.el.css( 'z-index', zIndex );
     }
 });
 
