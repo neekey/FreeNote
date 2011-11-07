@@ -68,7 +68,7 @@
              */
             case 'anim':
 
-                var animProperties = properties, key, _key,
+                var key, _key,
                     xyz = [ 'x', 'y', 'z' ];
 
                 // 先解析动画属性，全部转化为 key[X|Y\Z] 形式
@@ -80,20 +80,20 @@
 
                         _key = key + v.toUpperCase();
 
-                        if( !( _key in animProperties ) ){
+                        if( !( _key in properties ) ){
 
-                            animProperties[ _key ] = transform[ key ][ v ];
+                            properties[ _key ] = transform[ key ][ v ];
                         }
                     });
                 }
 
                 // 处理每个属性的值
-                for( key in animProperties ){
+                for( key in properties ){
 
-                    animProperties[ key ] = transfromValueHandle( key, animProperties[ key ] );
+                    properties[ key ] = transfromValueHandle( key, properties[ key ] );
                 }
 
-                this.anim.apply( this, [ animProperties ].concat( [].slice.call( arguments, 2 ) ) );
+                this.anim.apply( this, [ properties ].concat( [].slice.call( arguments, 2 ) ) );
                 break;
             default:
                 break;
