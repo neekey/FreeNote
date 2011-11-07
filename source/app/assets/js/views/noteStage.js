@@ -17,9 +17,15 @@ var VnoteStage = Backbone.View.extend({
 
         this.model.bind( 'change', this.position, this );
 
+        this.el = $( '#J_notes-stage' );
         this.el.bind( 'dragEnd', function(){
 
             that.render();
+        });
+
+        this.el.tap( function( e ){
+
+            that.trigger( 'tap', e );
         });
 
         if( this.model.get( 'located' ) ){
@@ -79,20 +85,12 @@ var VnoteStage = Backbone.View.extend({
 
     show: function(){
 
-        alert( 'showe' );
-        var that = this;
-        //this.el.show();
-        this.el.transform( 'anim', { scale: 1 }, 0.2, 'linear', function(){
-            alert( that.el.css( 'webkitTransform') );
-        });
-
+        this.el.show();
     },
 
     hide: function(){
 
-        //this.el.hide();
-        this.el.transform( 'anim', { scale: 0 }, 0.2 );
-
+        this.el.hide();
     },
 
     /**
@@ -102,15 +100,11 @@ var VnoteStage = Backbone.View.extend({
      */
     scrollTo: function( x, y ){
         //Todo 解决动画scroll出现空白的bug
+        /*
         this.el.transform( 'anim', { translateX: trans.x, translateY: trans.y }, 0.5, 'linear', function(){
-
-            var trans = that.el.transform( 'get', 'translate' ),
-                scale = that.el.transform( 'get', 'scale' ),
-                rotate = that.el.transform( 'get', 'rotate' );
         });
-
+        */
         this.el.transform( 'set', { translateX: x, translateY: y } );
-
     },
 
     /**
