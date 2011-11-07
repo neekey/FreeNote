@@ -120,7 +120,4 @@ var Vnote = Backbone.View.extend({
 
 VIEWS[ 'noteItem' ] = Vnote;
 
-
-
-
 })( window[ 'freenote' ]);
