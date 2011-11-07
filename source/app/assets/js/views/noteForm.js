@@ -159,9 +159,8 @@ TPL.require( [ 'noteForm' ], function(){
                     tags: this.tags.val().split( /\s+/ )
                 });
 
-                this.hide();
-
                 this.trigger( 'noteSave', this.model );
+                this.hide();
             }
         },
 
