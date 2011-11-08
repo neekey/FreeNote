@@ -24,12 +24,12 @@
                 that.checkHandle.apply( that, arguments );
             });
 
-            this.btnLogin.tap( function(){
+            this.btnLogin.bind( 'click', function(){
 
                 // 若表单无误
                 if( that.formValid.check() ){
 
-                    that.trigger( 'loginCheck', that.getFormData() );
+                    that.trigger( 'checkSuccess', that.getFormData() );
                 }
             });
 
