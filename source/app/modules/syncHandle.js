@@ -14,10 +14,11 @@ var sync = {
         changeList: [{
             type: 'del|add|update',
             note: note,
-            date:
+            date:,
+            _id:
         }],
         changeIndex: {
-            note_ind: index
+            _id: index
         }
     }
 }
@@ -71,8 +72,6 @@ var handle = {
                 }
             }
         });
-
-
     },
 
     addChange: function( name, serial, id, change, next ){
@@ -328,10 +327,10 @@ var handle = {
             change2 = sync2.changeList,
             list = [];
 
-        _.each( ids, function( id, index ){
+        _.each( ids, function( id ){
 
-            var _change1 = change1[ index ],
-                _change2 = change2[ index ],
+            var _change1 = change1[ index1[ id ] ],
+                _change2 = change2[ index2[ id ] ],
                 _change;
 
             if( !_change1 ){
