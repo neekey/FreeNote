@@ -121,36 +121,78 @@ exports.run = function( req, res ){
         case 'compare':
 
             var list1 = {
-                1: {
-                    note: 'test',
-                    date: 12345
-                },
-                2: {
-                    note: 'neekey',
-                    date: 2222
-                },
-                3: {
-                    note: 'haha',
-                    date: 4444
-                },
-                4: {
-                    note: 'takjal',
-                    date: 4444
+                sync: Date.now(),
+                changeList: [
+                    {
+                        type: 'add',
+                        date: 12345,
+                        note: {
+                            id: 12,
+                            content: 'test'
+                        },
+                        _id: 12
+                    },
+                    {
+                        type: 'update',
+                        date: 12346,
+                        note: {
+                            id: 13,
+                            content: 'test'
+                        },
+                        _id: 13
+                    },
+                    {
+                        type: 'update',
+                        date: 12346,
+                        note: {
+                            id: 15,
+                            content: 'test'
+                        }
+                    }
+
+                ],
+                changeIndex: {
+
+                    12: 0,
+                    13: 1
                 }
             };
 
             var list2 = {
-                2: {
-                    note: 'neekey2',
-                    date: 33333
-                },
-                3: {
-                    note: 'haha2',
-                    date: 4444
-                },
-                5: {
-                    note: 'taaaaaaa5',
-                    date: 4444
+                sync: Date.now(),
+                changeList: [
+                    {
+                        type: 'add',
+                        date: 12345,
+                        note: {
+                            id: 13,
+                            content: 'test'
+                        },
+                        _id: 13
+                    },
+                    {
+                        type: 'update',
+                        date: 12345,
+                        note: {
+                            id: 11,
+                            content: 'test'
+                        },
+                        _id: 11
+                    },
+                    {
+                        type: 'update',
+                        date: 12345,
+                        note: {
+                            id: 12,
+                            content: 'test'
+                        },
+                        _id: 12
+                    }
+                ],
+                changeIndex: {
+                    13: 0,
+                    11: 1,
+                    12: 2
                 }
             };
             
