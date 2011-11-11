@@ -466,6 +466,34 @@ var handle = {
 
         var that = this;
 
+        // 若第一次同步，则将所有笔记信息返回
+        if( !clientSync.synced ){
+
+            var changes = [];
+
+            Mnh.getAllNotes( name, function( err, notes ){
+
+                if( err ){
+
+                    next( err );
+                }
+                else {
+
+                    _.each( notes, function( note ){
+
+                        changes.push({
+                            type: 'add',
+                            note: note
+                        });
+                    });
+
+                    next( null, changes );
+                }
+            });
+
+            return;
+        }
+
         this.get( name, function( err, serverSyncs ){
 
             var sync = serverSyncs[ serial ],
