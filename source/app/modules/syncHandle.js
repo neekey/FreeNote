@@ -80,6 +80,15 @@ var handle = {
     },
 
 
+    /**
+     * 向同步信息表中添加变更记录
+     * @param name
+     * @param serial
+     * @param id
+     * @param change
+     * @param next
+     *      err: mongo_err | user_not_exist | syncs_not_found
+     */
     addChange: function( name, serial, id, change, next ){
 
         var that = this;
@@ -222,6 +231,12 @@ var handle = {
 
     },
 
+    /**
+     * 更新同步表的计时器
+     * @param name
+     * @param serial
+     *      err: mongo_error | user_not_exist
+     */
     updateTimer: function( name, serial ){
 
         var that = this;
@@ -372,9 +387,11 @@ var handle = {
 
 
     /**
-     * compare 2 changelist and return the result
-     * @param sync1
-     * @param sync2
+     * 对客户端和服务器端对应的同步表进行比较，返回：
+     *      client: 客户端的变动
+     *      server: 服务器端相对客户端的变动
+     * @param clientSync
+     * @param serverSync
      */
     compare: function( clientSync, serverSync ){
 
@@ -435,6 +452,16 @@ var handle = {
         };
     },
 
+    /**
+     * 对客户端的同步请求进行处理
+     * @param name 用户名
+     * @param serial 序列号
+     * @param clientSync 客户端发来的同步信息表
+     * @param next
+     *      err: mongo_err | user_not_exist | syncs_not_found
+     *
+     */
+    //todo 若clientSync 的 sync为null或者undefined，说明尚未进行过同步，则直接返回所有用户数据。
     sync: function( name, serial, clientSync, next ){
 
         var that = this;
