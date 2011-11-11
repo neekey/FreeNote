@@ -21,15 +21,20 @@
 
         initialize: function(){
 
-
+            this.bind( 'change', function(){
+                this.save({}, {
+                    silent: true
+                });
+            }, this );
         },
 
         noteUpdate: function( m ){
 
+            console.log( 'model change' );
+            
             this.set({
                 'note': m.toJSON(),
-                'date': Date.now(),
-                'type': 'update'
+                'date': Date.now()
             });
         },
         
@@ -56,6 +61,27 @@
         },
 
         /**
+         * 初始化fetch后执行
+         * 寻找每一条变更对应的model，绑定事件
+         * @param notes
+         */
+        bindModels: function( notes ){
+
+            var that = this;
+
+            this.forEach( function( m ){
+
+                var model = notes.get( m.id );
+
+                if( model ){
+                    
+                    model.bind( 'change', m.noteUpdate, m );
+                    model.bind( 'destroy', m.noteDestroy, m );
+                }
+            });
+        },
+
+        /**
          * 添加变更记录
          * @param m
          * @param type
@@ -64,9 +90,7 @@
 
             if( !m.get( 'syncMarked' ) ){
 
-                m.set({ 'syncMarked': true }, {
-                    silent: true
-                });
+                m.set({ 'syncMarked': true });
 
                 var change = this.create({
                     id: m.get( 'id' ),
@@ -88,8 +112,11 @@
         defaults: {
             synced: false,
             sync: null,
-            notes: null
+            notes: null,
+            table: null
         },
+
+        urlRoot: '/res/sync/',
 
         localStorage: new MODS.localStorageStore( 'sync' ),
 
@@ -100,6 +127,8 @@
                 Changes = new CLchange(),
                 that = this;
             this.set({ 'notes': null });
+
+            Changes.bindModels( Notes );
 
             // 设置当笔记发生变动时，自动更新记录到同步表中
             Notes.bind( 'change', function( m ){
@@ -120,11 +149,79 @@
             // 实时保存
             this.bind( 'change', function( m ){
 
-                //this.save();
+                this.save({}, { silent: true });
             }, this );
+            
+            this.getChanges = function(){
 
+                return Changes;
+            };
+
+            this.getNotes = function(){
+
+                return Notes;
+            };
+            
             this.fetch();
             this.save();
+        },
+
+        pushSync: function(){
+
+            $.ajax({
+                type: "post",
+                url: this.urlRoot,
+                data: JSON.stringify( this.get( 'table' ) ),
+                success: function( data ){
+
+                    console.log( data );
+                },
+                error: function( err ){
+
+                    //var data = JSON.parse( err.responseText );
+
+                    console.log( err.responseText );
+                }
+            });
+        },
+
+        buildSyncTable: function(){
+
+            var changes = this.getChanges(),
+                changeList = [],
+                changeIndex = {},
+                table;
+
+            changes.forEach( function( m, index ){
+
+                var note = m.get( 'note' ),
+                change = {
+                    type: m.get( 'type' ),
+                    date: m.get( 'date' ),
+                    note: note
+                };
+
+                if( note._id !== undefined ){
+
+                    change._id = note._id;
+                    changeIndex[ note._id ] = index;
+                }
+
+                changeList.push( change );
+            });
+            
+            table = {
+                sync: this.get( 'sync' ),
+                changeList: changeList,
+                changeIndex: changeIndex
+            };
+
+
+
+            this.set( { 'table': table } );
+
+            console.log( this.get( 'table' ) );
+            return table;
         }
     });
 
