@@ -79,6 +79,12 @@ _.extend( router, {
 
             that.emit( 'getNotes', req, res );
         });
+
+        // 同步
+        app.post( '/res/sync/', function( req, res ){
+
+            that.emit( 'sync', req, res );
+        });
     }
 });
 
