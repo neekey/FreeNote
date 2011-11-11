@@ -12,7 +12,10 @@ var Snote = new schema({
 	content: { type: String, required: true },
 	created: { type: Date, 'default': Date.now },
 	updated: { type: Date, 'default': Date.now },
-	tags: [ String ]
+	tags: [ String ],
+    id: { type: String },
+    x: { type: String, 'default': '0' },
+    y: { type: String, 'default': '0' }
 }),
 
 // tag
@@ -52,6 +55,10 @@ Suser.methods.addNote = function( note ){
         newNote.tags = note.tags;
     }
 
+    newNote.x = note.x;
+    newNote.y = note.y;
+    newNote.id = note.id;
+
     var _id = this.notes.push( newNote );
 
     console.log( _id );
@@ -88,6 +95,10 @@ Suser.methods.updateNote = function( id, update ){
 			// 更新时间
 			note.updated = Date.now();
 		}
+
+        note.x = update.x || note.x;
+        note.y = update.y || note.y;
+        note.id = update.id || note.id;
 
 		return true;
 	}
