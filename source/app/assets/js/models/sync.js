@@ -88,7 +88,7 @@
          */
         addChange: function( m, type ){
 
-            if( !m.get( 'syncMarked' ) ){
+            if( !m.get( 'syncMarked' ) && !this.get( m.id ) ){
 
                 m.set({ 'syncMarked': true });
 
@@ -104,6 +104,14 @@
                 m.bind( 'change', change.noteUpdate, change );
                 m.bind( 'destroy', change.noteDestroy, change );
             }
+        },
+
+        clear: function(){
+
+            this.forEach( function( change ){
+
+                change.destroy();
+            });
         }
     }),
 
@@ -168,19 +176,84 @@
 
         pushSync: function(){
 
+            var that = this;
+
+            this.buildSyncTable();
+
             $.ajax({
                 type: "post",
                 url: this.urlRoot,
+                dataType: 'json',
                 data: JSON.stringify( this.get( 'table' ) ),
                 success: function( data ){
 
-                    console.log( data );
+                    if( !_.isObject( data ) ){
+
+                        data = JSON.parse( data );
+                    }
+
+                    that.updateNotes( data );
+
+                    // 清理变更记录
+                    that.getChanges().clear();
+
+                    that.set( { synced: true, sync: Date.now() } );
+
+                    that.buildSyncTable();
+
+                    that.save();
+                    
                 },
                 error: function( err ){
 
                     //var data = JSON.parse( err.responseText );
 
                     console.log( err.responseText );
+                }
+            });
+        },
+
+        /**
+         * 经从服务器返回的数据更新到models中
+         * 由于在执行完updateNotes后就回将所有的变更记录清理一遍，因此不用担心更新model的时候又重新添加了变更记录
+         * @param changeList
+         */
+        //todo 要考虑下以_id来进行检查配对数据的情况
+        //不同登陆序列可能会出现不同的client id 对应相同 _id的情况
+        //todo 更新还有问题
+        updateNotes: function( changeList ){
+
+            var notes = this.getNotes(),
+                changes = this.getChanges(),
+                that = this;
+
+            _.each( changeList, function( change ){
+               
+                var type = change.type,
+                    note = change.note,
+                    id = note.id,
+                    _id = change._id,
+                    clientNote = notes.get( id );
+
+                if( type === 'del' ){
+
+                    if( clientNote ){
+
+                        clientNote.destroy();
+                    }
+                }
+                else {
+
+                    if( !clientNote ){
+
+                        clientNote = notes.create( note );
+                    }
+                    else {
+
+                        clientNote.set( note, { silent: true } );
+                    }
+
+                    clientNote.save( {}, { silent: true } );
                 }
             });
         },
@@ -212,6 +285,7 @@
             
             table = {
                 sync: this.get( 'sync' ),
+                synced: this.get( 'synced' ),
                 changeList: changeList,
                 changeIndex: changeIndex
             };
