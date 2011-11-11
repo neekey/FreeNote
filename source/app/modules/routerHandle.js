@@ -135,9 +135,9 @@ _.extend( handle, {
         'sync': function( req, res ){
 
             var that = this,
-                table = req.body,
-                name = req.cookies[ USERNAME ],
-                serial = req.cookies[ SERIAL ];
+                table = JSON.parse( req.rawBody ),
+                name = req.cookies[ cookieConfig.username ],
+                serial = req.cookies[ cookieConfig.serial ];
 
             syncH.sync( name, serial, table, function( err, serverSync ){
 
