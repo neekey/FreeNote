@@ -2,14 +2,16 @@
  * 权限，登陆，登出等
  */
 var Msh = require( './mongoSessionHandle' ),
-	Mh = require( './mongoUserHandle' ),
-	Sh = require( './sessionHandle' ),
+    Mh = require( './mongoUserHandle' ),
+    Sh = require( './sessionHandle' ),
+    SyncH = require( './syncHandle' ),
     Ch = require( './cookieHandle' ),
-    errorConf = _freenote_cfg.error;
+    errorConf = _freenote_cfg.error,
+    cookieConfig = _freenote_cfg.cookie;
 
-var USERNAME = '_freenote_name',
-	SERIAL = '_freenote_serial',
-	TOKEN = '_freenote_token';
+var USERNAME = cookieConfig.username,
+    SERIAL = cookieConfig.serial,
+    TOKEN = cookieConfig.token;
 
 var auth = {
 
@@ -23,6 +25,8 @@ var auth = {
      *      err: session_not_found | mongo_error | user_not_exist | serial_not_found | already_login
      */
     register: function( req, res, name, password, next ){
+
+        var that = this;
 
         this.check( req, res, function( err, result, _name ){
             if( err ){
@@ -46,6 +50,7 @@ var auth = {
                                     }
                                     else {
 
+                                        /*
                                         Sh.addSerial( name, function( err, s ){
 
                                             var newCookie = {};
@@ -56,6 +61,20 @@ var auth = {
                                             Ch.set( res, newCookie );
 
                                             next( null, user );
+                                        });
+                                        */
+
+                                        // 登陆
+                                        that.login( req, res, name, password, function( err, s ){
+
+                                            if( err ){
+
+                                                next( err );
+                                            }
+                                            else {
+
+                                                next( null, user );
+                                            }
                                         });
                                     }
                                 });
@@ -84,7 +103,7 @@ var auth = {
      * @param next( err, { serial: serial, token: token } )
      *      err: session_not_found | mongo_error | user_not_exist | serial_not_found | already_login | password_incorrect
      */
-	login: function( req, res, name, password, next ){
+    login: function( req, res, name, password, next ){
 
         this.check( req, res, function( err, result, _name ){
             if( err ){
@@ -106,6 +125,7 @@ var auth = {
                         else {
                             if( user.password === password ){
 
+                                // 添加一个登陆序列
                                 Sh.addSerial( name, function( err, s ){
 
                                     var newCookie = {};
@@ -115,7 +135,18 @@ var auth = {
 
                                     Ch.set( res, newCookie );
 
-                                    next( null, s );
+                                    // 添加一个同步列表
+                                    SyncH.add( name, s.serial, function( err, sync ){
+
+                                        if( err ){
+
+                                            next( err );
+                                        }
+                                        else {
+
+                                            next( null, user );
+                                        }
+                                    });
                                 });
                             }
                             else {
@@ -130,7 +161,7 @@ var auth = {
             }
         });
 
-	},
+    },
 
     /**
      * check if user has login and update token
@@ -139,29 +170,29 @@ var auth = {
      * @param next( err, result )
      *      err: session_not_found | mongo_error | user_not_exist | serial_not_found
      */
-	check: function( req, res, next ){
-		var name = req.cookies[ USERNAME ],
-			serial = req.cookies[ SERIAL ],
-			token = req.cookies[ TOKEN ],
-			that = this;
+    check: function( req, res, next ){
+        var name = req.cookies[ USERNAME ],
+            serial = req.cookies[ SERIAL ],
+            token = req.cookies[ TOKEN ],
+            that = this;
 
-		if( !name || !serial ){
-			next( null, false );
-		}
-		else {
-			Sh.getSession( name, function( err, se ){
-				if( err ){
+        if( !name || !serial ){
+            next( null, false );
+        }
+        else {
+            Sh.getSession( name, function( err, se ){
+                if( err ){
                     if( err.type === 'mongo_error' ){
-					    next( err );
+                        next( err );
                     }
                     else {
                         next( null, false );
                     }
-				}
-				else {
-					if( se && se[ serial ] && se[ serial ].token  === token ){
-						// 更新token
-						that.updateSession( req, res, name, serial, function(){
+                }
+                else {
+                    if( se && se[ serial ] && se[ serial ].token  === token ){
+                        // 更新token
+                        that.updateSession( req, res, name, serial, function(){
                             if( err ){
                                 next( err, false );
                             }
@@ -169,8 +200,8 @@ var auth = {
                                 next( null, true, name );
                             }
                         });
-					}
-					else if( se && se[ serial ] && se[ serial ].token !== token ){
+                    }
+                    else if( se && se[ serial ] && se[ serial ].token !== token ){
 
                         // 有安全问题，销毁用户该登陆序列
                         Sh.destroy( name, serial, function( err ){
@@ -187,14 +218,14 @@ var auth = {
                                 });
                             }
                         });
-					}
+                    }
                     else {
                         next( null, false );
                     }
-				}
-			});
-		}
-	},
+                }
+            });
+        }
+    },
 
 
     /**
@@ -204,7 +235,7 @@ var auth = {
      * @param next( err )
      *      err: logout_fail | session_not_found | mongo_error | user_not_exist | serial_not_found
      */
-	logout: function( req, res, next ){
+    logout: function( req, res, next ){
 
         this.check( req, res, function( err, result ){
             if( err ){
@@ -212,7 +243,7 @@ var auth = {
             }
             else {
                 var name = req.cookies[ USERNAME ],
-			        serial = req.cookies[ SERIAL ];
+                    serial = req.cookies[ SERIAL ];
 
                 if( result ){
                     Ch.clear( res, [ USERNAME, SERIAL, TOKEN ] );
@@ -221,7 +252,19 @@ var auth = {
                             next( err );
                         }
                         else {
-                            next( null );
+
+                            // 删除该同步列表
+                            SyncH.destroy( name, serial, function( err ){
+
+                                if( err ){
+
+                                    next( err );
+                                }
+                                else {
+
+                                    next( null );
+                                }
+                            });
                         }
                     })
                 }
@@ -233,7 +276,7 @@ var auth = {
                 }
             }
         });
-	},
+    },
 
     /**
      * update session[ serial ]
@@ -244,8 +287,8 @@ var auth = {
      * @param next( err )
      *      err: session_not_found | mongo_error | user_not_exist | serial_not_found
      */
-	updateSession: function( req, res, name, serial, next ){
-		Sh.updateSession( name, serial, function( err, s ){
+    updateSession: function( req, res, name, serial, next ){
+        Sh.updateSession( name, serial, function( err, s ){
             if( err ){
                 next( err );
             }
@@ -257,7 +300,7 @@ var auth = {
                 next( null );
             }
         });
-	}
+    }
 };
 
 module.exports = auth;
