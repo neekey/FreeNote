@@ -10,7 +10,7 @@ var ROUTERS = APP.routers,
 var router = Backbone.Router.extend({
 
     routes: {
-        "": "login",
+        "": "loginPage",
         ":type": "handle"
     },
 
@@ -26,9 +26,6 @@ var router = Backbone.Router.extend({
         });
 
         Backbone.history.start();
-
-        this.login.show();
-
     },
 
     handle: function( type ){
