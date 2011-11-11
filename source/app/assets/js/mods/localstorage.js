@@ -106,7 +106,7 @@
                     break;
             }
         } else {
-            options.error("Record not found");
+            options.error( model, "Record not found");
         }
     };
 
