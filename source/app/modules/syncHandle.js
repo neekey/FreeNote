@@ -229,7 +229,10 @@ var handle = {
         var s = Sync[ name ][ serial ];
 
         // clear timer
-        s.clearTimer && s.clearTimer();
+        if( s.clearTimer && _.isFunction( s.clearTimer ) ){
+
+            s.clearTimer();
+        }
 
         // set timeout
         var timer = setTimeout( function(){
@@ -454,7 +457,11 @@ var handle = {
 
                     Mnh.add( name, s.note, function( err, _id ){
 
-                        if( !ifError ){
+                        if( ifError ){
+
+                            return;
+                        }
+                        else {
 
                             if( err ){
 
@@ -468,17 +475,27 @@ var handle = {
 
                                 s._id = _id;
                                 s.note._id = _id;
+
+                                curClientCount++;
+
+                                // 若所有更改都已经加入到数据库，则更新所有同步表
+                                if( curClientCount === clientChangeLen ){
+
+                                    updateAllSync();
+                                }
                             }
                         }
-
-                        return;
                     });
                 }
                 else if( type === 'update' ){
 
                     Mnh.update( name, s._id, s.note, function( err ){
 
-                        if( !ifError ){
+                        if( ifError ){
+
+                            return;
+                        }
+                        else {
 
                             if( err ){
 
@@ -488,16 +505,28 @@ var handle = {
 
                                 return;
                             }
-                        }
+                            else {
 
-                        return;
+                                curClientCount++;
+
+                                // 若所有更改都已经加入到数据库，则更新所有同步表
+                                if( curClientCount === clientChangeLen ){
+
+                                    updateAllSync();
+                                }
+                            }
+                        }
                     });
                 }
                 else if( type === 'del' ){
 
                     Mnh.del( name, s._id, function( err ){
 
-                        if( !ifError ){
+                        if( ifError ){
+
+                            return;
+                        }
+                        else {
 
                             if( err ){
 
@@ -507,16 +536,21 @@ var handle = {
 
                                 return;
                             }
-                        }
+                            else {
 
-                        return;
+                                curClientCount++;
+
+                                // 若所有更改都已经加入到数据库，则更新所有同步表
+                                if( curClientCount === clientChangeLen ){
+
+                                    updateAllSync();
+                                }
+                            }
+                        }
                     })
                 }
 
-                curClientCount++;
-
-                // 若所有更改都已经加入到数据库，则更新所有同步表
-                if( curClientCount === clientChangeLen ){
+                function updateAllSync(){
 
                     var syncLen = _.keys( serverSyncs ).length,
                         syncCount = 0;
