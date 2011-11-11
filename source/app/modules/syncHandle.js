@@ -2,6 +2,7 @@
  * syncHandle
  */
 var Msh = require( './mongoSyncHandle' ),
+    Mnh = require( './mongoNoteHandle' ),
     errorConf = _freenote_cfg.error,
     Expire = 30;
 
@@ -9,16 +10,18 @@ var Sync = {},
     syncDiff = {};
 /*
 var sync = {
-    serial1: {
-        sync: Date.now(),
-        changeList: [{
-            type: 'del|add|update',
-            note: note,
-            date:,
-            _id:
-        }],
-        changeIndex: {
-            _id: index
+    name: {
+        serial1: {
+            sync: Date.now(),
+            changeList: [{
+                type: 'del|add|update',
+                note: note,
+                date:,
+                _id:
+            }],
+            changeIndex: {
+                _id: index
+            }
         }
     }
 }
@@ -35,6 +38,8 @@ var handle = {
      */
     add: function( name, serial, next ){
 
+        var that = this;
+
         this.get( name, function( err, syncs ){
 
             if( err && err.type !== 'syncs_not_found' ){
@@ -49,8 +54,6 @@ var handle = {
                 }
 
                 var syncs = Sync[ name ];
-
-                console.log( syncs );
 
                 if( serial in syncs ){
 
@@ -68,13 +71,18 @@ var handle = {
                         changeIndex: {}
                     };
 
+                    that.updateTimer( name, serial );
+
                     return next( null, syncs[ serial ] );
                 }
             }
         });
     },
 
+
     addChange: function( name, serial, id, change, next ){
+
+        var that = this;
 
         this.get( name, function( err, syncs ){
 
@@ -103,6 +111,8 @@ var handle = {
                         s.changeList.push( change );
                         s.changeIndex[ id ] = s.changeList.length - 1;
                     }
+
+                    that.updateTimer( name, serial );
 
                     next( null );
                 }
@@ -165,6 +175,51 @@ var handle = {
                 }
             })
         }
+    },
+
+    /**
+     * 清理指定序列
+     * @param name
+     * @param serial
+     * @param next( err, sync )
+     *      err: mongo_err | user_not_exist | syncs_not_found
+     */
+    clearChnage: function( name, serial, next ){
+
+        var that = this;
+
+        this.get( name, function( err, syncs ){
+
+            if( err ){
+
+                next( err );
+            }
+            else {
+
+                if( serial in syncs ){
+
+                    var s = syncs[ serial ], index;
+
+                    s.sync = Date.now();
+
+                    s.changeList = [];
+
+                    s.changeIndex = {};
+
+                    that.updateTimer( name, serial );
+
+                    next( null );
+                }
+                else {
+
+                    next({
+                        type: 'sync_not_found',
+                        msg: errorConf.get( 'sync_not_found', { name: name, serial: serial } )
+                    })
+                }
+            }
+        });
+
     },
 
     updateTimer: function( name, serial ){
@@ -311,67 +366,229 @@ var handle = {
         }
     },
 
+
+
     /**
      * compare 2 changelist and return the result
      * @param sync1
      * @param sync2
      */
-    compare: function( sync1, sync2 ){
+    compare: function( clientSync, serverSync ){
 
-        var index1 = sync1.changeIndex,
-            index2 = sync2.changeIndex,
-            ids1 = _.keys( index1 ),
-            ids2 = _.keys( index2 ),
-            ids = _.union( ids1, ids2 ),
-            change1 = sync1.changeList,
-            change2 = sync2.changeList,
-            list = [];
+        var index1 = clientSync.changeIndex,
+            index2 = serverSync.changeIndex,
+            clientChange = [],
+            serverChange = [],
+            change1 = clientSync.changeList,
+            change2 = serverSync.changeList;
 
-        _.each( ids, function( id ){
+        // 遍历客户端中带来的更改
+        _.each( change1, function( changeC ){
 
-            var _change1 = change1[ index1[ id ] ],
-                _change2 = change2[ index2[ id ] ],
-                _change;
+            var changeS = change2[ index2[ changeC._id ] ],
+                change;
 
-            if( !_change1 ){
+            if( !changeS ) {
 
-                _change = _change2;
+                change = changeC;
             }
-            else if( !_change2 ) {
+            else if( changeC.date > changeS.date ){
 
-                _change = _change1;
-            }
-            else if( _change1.date > _change2.date ){
-
-                _change = _change1;
+                change = changeC;
             }
             else {
 
-                _change = _change2;
+                return;
             }
 
-            list.push( _change );
+            clientChange.push( change );
         });
 
-        // 将没有id的记录添加进来（比如添加笔记）
-        _.each( change1, function( change ){
+        // 遍历服务器端中的更改
+        _.each( change2, function( changeS ){
 
-            if( change._id === undefined ){
+            var changeC = change1[ index1[ changeS._id ] ],
+                change;
 
-                list.push( change );
+            if( !changeC ) {
+
+                change = changeS;
             }
-        });
+            else if( changeS.date > changeC.date ){
 
-        _.each( change2, function( change ){
-
-            if( change._id === undefined ){
-
-                list.push( change );
+                change = changeS;
             }
+            else {
+
+                return;
+            }
+
+            serverChange.push( change );
         });
 
+        return {
+            client: clientChange,
+            server: serverChange
+        };
+    },
 
-        return list;
+    sync: function( name, serial, clientSync, next ){
+
+        var that = this;
+
+        this.get( name, function( err, serverSyncs ){
+
+            var sync = serverSyncs[ serial ],
+                compareResult = that.compare( clientSync, sync),
+                clientChange = compareResult[ 'client' ],
+                serverChange = compareResult[ 'server' ],
+                clientChangeLen = clientChange.length,
+                curClientCount = 0,
+                ifError = false;
+
+            _.each( clientChange, function( s ){
+
+                var type = s.type;
+
+                if( type === 'add' ){
+
+                    Mnh.add( name, s.note, function( err, _id ){
+
+                        if( !ifError ){
+
+                            if( err ){
+
+                                ifError = true;
+
+                                next( err );
+
+                                return;
+                            }
+                            else {
+
+                                s._id = _id;
+                                s.note._id = _id;
+                            }
+                        }
+
+                        return;
+                    });
+                }
+                else if( type === 'update' ){
+
+                    Mnh.update( name, s._id, s.note, function( err ){
+
+                        if( !ifError ){
+
+                            if( err ){
+
+                                ifError = true;
+
+                                next( err );
+
+                                return;
+                            }
+                        }
+
+                        return;
+                    });
+                }
+                else if( type === 'del' ){
+
+                    Mnh.del( name, s._id, function( err ){
+
+                        if( !ifError ){
+
+                            if( err ){
+
+                                ifError = true;
+
+                                next( err );
+
+                                return;
+                            }
+                        }
+
+                        return;
+                    })
+                }
+
+                curClientCount++;
+
+                // 若所有更改都已经加入到数据库，则更新所有同步表
+                if( curClientCount === clientChangeLen ){
+
+                    var syncLen = _.keys( serverSyncs ).length,
+                        syncCount = 0;
+
+                    _.each( serverSyncs, function( sync, key ){
+
+                        var changeCount = 0;
+
+                        _.each( clientChange, function( change ){
+
+                            that.addChange( name, key, change._id, change.note, function( err ){
+
+                                if( ifError ){
+
+                                    return;
+                                }
+                                else {
+
+                                    if( err ){
+
+                                        next( err );
+
+                                        ifError = true;
+
+                                        return;
+                                    }
+                                    else {
+
+                                        changeCount++;
+
+                                        if( changeCount === clientChangeLen ){
+
+                                            syncCount++;
+
+                                            if( syncCount === syncLen ){
+
+                                                // 清空当前序列的 服务器端的同步表
+                                                that.clearChnage( name, serial, function( err, s ){
+
+                                                    if( err ){
+
+                                                        next( err );
+                                                    }
+                                                    else {
+
+                                                        // 构造需要返回给客户端的同步信息
+                                                        _.each( clientChange, function( change ){
+
+                                                            if( change.type === 'add' ){
+
+                                                                serverChange.push( change );
+                                                            }
+                                                        });
+
+                                                        next( null, serverChange );
+                                                    }
+                                                });
+                                                
+                                            }
+                                        }
+                                    }
+                                }
+
+                            });
+                        });
+
+                    });
+                }
+
+            });
+
+        });
     }
 }
 
