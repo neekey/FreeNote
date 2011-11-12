@@ -62,8 +62,6 @@ var Vnote = Backbone.View.extend({
         
         // 加入到dom树中
         this.el.appendTo( this.noteList );
-
-
     },
 
     events: {
@@ -86,9 +84,7 @@ var Vnote = Backbone.View.extend({
         // 根据当前translate来更新model
         var trans = this.el.transform( 'get', 'translate' );
 
-        this.model.set( trans, {
-            silent: true
-        });
+        this.model.set( trans );
 
         this.model.save({}, { silent: true });
     },
