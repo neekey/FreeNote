@@ -504,6 +504,12 @@ var handle = {
                 curClientCount = 0,
                 ifError = false;
 
+            if( clientChangeLen === 0 ){
+
+                updateAllSync();
+
+                return;
+            }
             _.each( clientChange, function( s ){
 
                 var type = s.type;
@@ -605,77 +611,89 @@ var handle = {
                     })
                 }
 
-                function updateAllSync(){
 
-                    var syncLen = _.keys( serverSyncs ).length,
-                        syncCount = 0;
 
-                    _.each( serverSyncs, function( sync, key ){
+            });
 
-                        var changeCount = 0;
+            function updateAllSync(){
 
-                        _.each( clientChange, function( change ){
+                var syncLen = _.keys( serverSyncs ).length,
+                    syncCount = 0;
 
-                            that.addChange( name, key, change._id, change.note, function( err ){
+                _.each( serverSyncs, function( sync, key ){
 
-                                if( ifError ){
+                    var changeCount = 0;
+
+                    if( clientChangeLen === 0 ){
+
+                        handleResponse();
+                        return;
+                    }
+
+                    _.each( clientChange, function( change ){
+
+                        that.addChange( name, key, change._id, change, function( err ){
+
+                            if( ifError ){
+
+                                return;
+                            }
+                            else {
+
+                                if( err ){
+
+                                    next( err );
+
+                                    ifError = true;
 
                                     return;
                                 }
                                 else {
 
-                                    if( err ){
+                                    changeCount++;
 
-                                        next( err );
+                                    if( changeCount === clientChangeLen ){
 
-                                        ifError = true;
+                                        syncCount++;
 
-                                        return;
-                                    }
-                                    else {
+                                        if( syncCount === syncLen ){
 
-                                        changeCount++;
-
-                                        if( changeCount === clientChangeLen ){
-
-                                            syncCount++;
-
-                                            if( syncCount === syncLen ){
-
-                                                // 清空当前序列的 服务器端的同步表
-                                                that.clearChnage( name, serial, function( err, s ){
-
-                                                    if( err ){
-
-                                                        next( err );
-                                                    }
-                                                    else {
-
-                                                        // 构造需要返回给客户端的同步信息
-                                                        _.each( clientChange, function( change ){
-
-                                                            if( change.type === 'add' ){
-
-                                                                serverChange.push( change );
-                                                            }
-                                                        });
-
-                                                        next( null, serverChange );
-                                                    }
-                                                });
-                                                
-                                            }
+                                            handleResponse();
                                         }
                                     }
                                 }
+                            }
 
-                            });
+                        });
+                    });
+
+                });
+            }
+
+            function handleResponse(){
+
+                // 清空当前序列的 服务器端的同步表
+                that.clearChnage( name, serial, function( err, s ){
+
+                    if( err ){
+
+                        next( err );
+                    }
+                    else {
+
+                        // 构造需要返回给客户端的同步信息
+                        _.each( clientChange, function( change ){
+
+                            if( change.type === 'add' ){
+
+                                serverChange.push( change );
+                            }
                         });
 
-                    });
-                }
-
-            });
+                        next( null, serverChange );
+                    }
+                });
+            }
 
         });
     }
