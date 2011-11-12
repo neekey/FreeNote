@@ -49,7 +49,6 @@ var VnoteStage = Backbone.View.extend({
         $( document.body ).height( screenInfo.height );
         $( document.body ).width( screenInfo.width );
         
-
     },
 
     iniLocate: function(){
