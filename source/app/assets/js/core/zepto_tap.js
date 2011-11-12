@@ -14,12 +14,22 @@
      */
     $.fn[ 'tap' ] = function( callback ){
 
-        var moved = false, touch;
-        
         if( callback && _.isFunction( callback ) ){
 
             this.bind( 'tap', callback );
         }
+        
+        if( _.isEmpty( $.os ) ){
+
+            this.bind( 'click', function( e ){
+
+                $( this ).trigger( 'tap', e );
+            });
+
+            return this;
+        }
+
+        var moved = false, touch;
 
         this.data( 'tap', 'bind' );
 
