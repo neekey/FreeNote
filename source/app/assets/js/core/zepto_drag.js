@@ -36,6 +36,15 @@
 
         _.each( handlers, function( handler ){
 
+            if( _.isEmpty( $.os ) ){
+
+                $( handler ).bind( 'mousedown', dragStart, false );
+                $( handler ).bind( 'mousemove', dragMove, false );
+                $( handler ).bind( 'mouseup', dragEnd, false );
+
+                return this;
+            }
+
             $( handler ).bind( 'touchstart', dragStart, false );
             $( handler ).bind( 'touchmove', dragMove, false );
             $( handler ).bind( 'touchend', dragEnd, false );
@@ -46,10 +55,20 @@
             e.preventDefault();
             e.stopPropagation();
 
-            if ( ! e.touches.length ) return;
+            if( _.isEmpty( $.os ) ){
 
-            var touch = e.touches[0],
-                translateInfo = that.transform( 'get', 'translate' );
+                $( this ).bind( 'mousemove', dragMove, false );
+                
+                var touch = e;
+            }
+            else {
+
+                if ( ! e.touches.length ) return;
+
+                var touch = e.touches[0];
+            }
+
+            var translateInfo = that.transform( 'get', 'translate' );
 
             startX = touch.pageX;
             startY = touch.pageY;
@@ -65,9 +84,16 @@
             e.preventDefault();
             e.stopPropagation();
 
-            if ( !e.touches.length) return;
+            if( _.isEmpty( $.os ) ){
 
-            var touch = e.touches[0];
+                var touch = e;
+            }
+            else {
+
+                if ( ! e.touches.length ) return;
+
+                var touch = e.touches[0];
+            }
 
             curX = touch.pageX - startX + lastX;
             curY = touch.pageY - startY + lastY;
@@ -94,6 +120,8 @@
             e.stopPropagation();
 
             that.trigger( 'dragEnd' );
+
+            $( this ).unbind( 'mousemove' );
         }
 
     return this;
