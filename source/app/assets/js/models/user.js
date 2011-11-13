@@ -70,7 +70,9 @@
             'created': '',
             'updated': '',
             // 用于标识，该笔记是否在同步表里已经有相关记录
-            'syncMarked': false
+            'syncMarked': false,
+            // 用来标识，该笔记是否是从服务器中通不过来的
+            'fromServer': false
         },
         
         localStorage: new MODS.localStorageStore( 'note' ),
@@ -218,14 +220,20 @@
                 Tags.notes = this;
                 Tags.init();
 
+            // 读取已经有的笔记信息
+            this.fetch();
+
             // 同步表
             var Sync = new MODELS[ 'sync' ]({
                 notes: this
             });
 
-            // 读取已经有的笔记信息
-            this.fetch();
+            window[ 'Sync' ] = Sync;
 
+            setInterval( function(){
+                Sync.pushSync();
+            }, 3000 );
+            console.log( Sync.buildSyncTable() );
         }
     }),
 
