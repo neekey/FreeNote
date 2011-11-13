@@ -108,10 +108,12 @@
 
         clear: function(){
 
-            this.forEach( function( change ){
+            var i;
+            for( i = 0; this.models[ i ]; ){
 
-                change.destroy();
-            });
+                console.log( this.models[ i ].cid );
+                this.models[ i ].destroy();
+            }
         }
     }),
 
@@ -141,12 +143,20 @@
             // 设置当笔记发生变动时，自动更新记录到同步表中
             Notes.bind( 'change', function( m ){
 
-                this.addChange( m, 'update' );
+                if( !m.get( 'fromServer' ) ){
+
+                    this.addChange( m, 'update' );
+                }
+
             }, Changes );
 
             Notes.bind( 'add', function( m ){
 
-                this.addChange( m, 'add' );
+                if( !m.get( 'fromServer' ) ){
+                    
+                    this.addChange( m, 'add' );
+                }
+
             }, Changes );
 
             Notes.bind( 'remove', function( m ){
@@ -235,6 +245,8 @@
                     _id = change._id,
                     clientNote = notes.get( id );
 
+                note[ 'fromServer' ] = true;
+
                 if( type === 'del' ){
 
                     if( clientNote ){
@@ -250,9 +262,13 @@
                     }
                     else {
 
-                        clientNote.set( note, { silent: true } );
+                        clientNote.set( note );
                     }
+                }
 
+                if( clientNote ){
+
+                    clientNote.set( { fromServer: false }, { silent: true } );
                     clientNote.save( {}, { silent: true } );
                 }
             });
