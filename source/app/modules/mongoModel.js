@@ -3,16 +3,16 @@
  * @Author neekey<ni184775761@gmail.com>
  */
 var mongoose = require( 'mongoose' ),
-	schema = mongoose.Schema;
+    schema = mongoose.Schema;
 
 /* define schema */
 
 // note
 var Snote = new schema({
-	content: { type: String, required: true },
-	created: { type: Date, 'default': Date.now },
-	updated: { type: Date, 'default': Date.now },
-	tags: [ String ],
+    content: { type: String, required: true },
+    created: { type: Date, 'default': Date.now },
+    updated: { type: Date, 'default': Date.now },
+    tags: [ String ],
     id: { type: String },
     x: { type: String, 'default': '0' },
     y: { type: String, 'default': '0' }
@@ -20,19 +20,19 @@ var Snote = new schema({
 
 // tag
 Stag = new schema({
-	// 代码维护其唯一性
-	value: { type: String, required: true },
-	notes: [ String ]
+    // 代码维护其唯一性
+    value: { type: String, required: true },
+    notes: [ String ]
 }),
 
 // user
 Suser = new schema({
-	name: { type: String, required: true, unique: true },
-	password: { type: String, required: true },
-	sessions: {},
+    name: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    sessions: {},
     syncs: {},
-	notes: [ Snote ],
-	tags: [ Stag ] 
+    notes: [ Snote ],
+    tags: [ Stag ]
 });
 
 /* define schema method */
@@ -77,33 +77,33 @@ Suser.methods.addNote = function( note ){
  */
 Suser.methods.updateNote = function( id, update ){
 
-	var note = this.notes.id( id ), 
-		that = this;
+    var note = this.notes.id( id ),
+        that = this;
 
-	if( note ){
+    if( note ){
 
-		if( update.content && _.isString( update.content ) ){
+        if( update.content && _.isString( update.content ) ){
 
-			note.content = update.content;
-			note.updated = Date.now();
-		}
+            note.content = update.content;
+            note.updated = Date.now();
+        }
 
-		if( update.tags && _.isArray( update.tags ) ){
+        if( update.tags && _.isArray( update.tags ) ){
 
-			// 删除重复
-			note.tags = _.uniq( update.tags );
-			// 更新时间
-			note.updated = Date.now();
-		}
+            // 删除重复
+            note.tags = _.uniq( update.tags );
+            // 更新时间
+            note.updated = Date.now();
+        }
 
         note.x = update.x || note.x;
         note.y = update.y || note.y;
         note.id = update.id || note.id;
 
-		return true;
-	}
+        return true;
+    }
 
-	return false;
+    return false;
 };
 
 /**
@@ -113,25 +113,25 @@ Suser.methods.updateNote = function( id, update ){
  */
 Suser.methods.delNote = function( id ){
 
-	var note = this.notes.id( id ), 
-		that = this, tags;
+    var note = this.notes.id( id ),
+        that = this, tags;
 
-	if( note ){
+    if( note ){
 
-		tags = note.tags;
+        tags = note.tags;
 
-		// delete according recode from tags
-		_.each( tags, function( tag ){
+        // delete according recode from tags
+        _.each( tags, function( tag ){
 
-			that.delTagNote( tag, id );
-		});
+            that.delTagNote( tag, id );
+        });
 
-		note.remove();
+        note.remove();
 
-		return true;
-	}
+        return true;
+    }
 
-	return false;
+    return false;
 };
 
 /**
@@ -141,17 +141,17 @@ Suser.methods.delNote = function( id ){
  */
 Suser.methods.getTagByName = function( name ){
 
-	var tag = _.select( this.tags, function( tag ){
+    var tag = _.select( this.tags, function( tag ){
 
-		return tag.value === name;
-	});
+        return tag.value === name;
+    });
 
-	if( tag[ 0 ] ){
+    if( tag[ 0 ] ){
 
-		return tag[ 0 ];
-	}
+        return tag[ 0 ];
+    }
 
-	return false;
+    return false;
 };
 
 /**
@@ -160,22 +160,22 @@ Suser.methods.getTagByName = function( name ){
  * @return false | tag._id
  */
 Suser.methods.addTag = function( tag ){
-	
-	if( !_.isString( tag ) ){
 
-		return false;
-	}
+    if( !_.isString( tag ) ){
 
-	var tagObj = this.getTagByName( tag );
-    
-	if( tagObj ){
+        return false;
+    }
 
-		return false;
-	}
+    var tagObj = this.getTagByName( tag );
 
-	this.tags.push({ value: tag });
+    if( tagObj ){
 
-	return _.last( this.tags )._id;
+        return false;
+    }
+
+    this.tags.push({ value: tag });
+
+    return _.last( this.tags )._id;
 };
 
 /**
@@ -185,15 +185,15 @@ Suser.methods.addTag = function( tag ){
  */
 Suser.methods.delTagById = function( id ){
 
-	var tag = this.tags.id( id );
+    var tag = this.tags.id( id );
 
-	if( tag ){
+    if( tag ){
 
-		tag.remove();
-		return true;
-	}
+        tag.remove();
+        return true;
+    }
 
-	return false;
+    return false;
 };
 
 /**
@@ -203,15 +203,15 @@ Suser.methods.delTagById = function( id ){
  */
 Suser.methods.delTagByName = function( t ){
 
-	var tag = this.getTagByName( t );
+    var tag = this.getTagByName( t );
 
-	if( tag !== false ){
+    if( tag !== false ){
 
-		tags.remove();
-		return true;
-	}
+        tags.remove();
+        return true;
+    }
 
-	return false;
+    return false;
 };
 
 /**
@@ -222,29 +222,29 @@ Suser.methods.delTagByName = function( t ){
  */
 Suser.methods.addTagNote = function( t, id ){
 
-	var tag = this.getTagByName( t ),
-		note = this.notes.id( id );
+    var tag = this.getTagByName( t ),
+        note = this.notes.id( id );
 
-	// if note is not exist
-	if( !note ){
+    // if note is not exist
+    if( !note ){
 
-		return false;
-	}
+        return false;
+    }
 
-	// if tag is not exist, add one
-	if( tag === false ){
+    // if tag is not exist, add one
+    if( tag === false ){
 
-		this.addTag( t );
-		tag = this.getTagByName( t );
-	}
+        this.addTag( t );
+        tag = this.getTagByName( t );
+    }
 
-	// if id is already in tag.notes
-	if( _.indexOf( tag.notes, String( id ) ) < 0 ){
+    // if id is already in tag.notes
+    if( _.indexOf( tag.notes, String( id ) ) < 0 ){
 
-		tag.notes.push( id );
-	}
+        tag.notes.push( id );
+    }
 
-	return true;
+    return true;
 };
 
 /**
@@ -254,17 +254,17 @@ Suser.methods.addTagNote = function( t, id ){
  */
 Suser.methods.delTagNote = function( t, id ){
 
-	var tag = this.getTagByName( t ), noteIndex;
+    var tag = this.getTagByName( t ), noteIndex;
 
-	if( tag !== false ){
+    if( tag !== false ){
 
-		noteIndex = _.indexOf( tag.notes, String( id ) );
+        noteIndex = _.indexOf( tag.notes, String( id ) );
 
-		if( noteIndex >= 0 ){
+        if( noteIndex >= 0 ){
 
-			tag.notes.splice( noteIndex, 1 );
-		}
-	}
+            tag.notes.splice( noteIndex, 1 );
+        }
+    }
 };
 
 /* ====== session method ====== */
@@ -280,8 +280,8 @@ Suser.methods.updateSession = function( se ){
     if( !_tempSessions ){
         _tempSessions = {};
     }
-    
-	_.extend( _tempSessions, se );
+
+    _.extend( _tempSessions, se );
 
     this.sessions = _tempSessions;
 
@@ -300,7 +300,7 @@ Suser.methods.delSession = function( serial ){
         _tempSessions = {};
     }
 
-	delete _tempSessions[ serial ];
+    delete _tempSessions[ serial ];
 
     this.sessions = _tempSessions;
 
@@ -312,7 +312,7 @@ Suser.methods.delSession = function( serial ){
  */
 Suser.methods.delAllSession = function(){
 
-	this.sessions = {};
+    this.sessions = {};
     this.markModified('sessions');
 };
 
