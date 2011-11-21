@@ -40,6 +40,21 @@ $( document ).ready(function(){
         });
     });
 
+    Mnotes.bind( 'add', function( m ){
+
+        var noteItem  = new VIEWS[ 'noteItem' ]( {
+            model: m,
+            noteForm: VnoteForm
+        });
+
+        // 绑定编辑事件
+        noteItem.bind( 'noteTouch', function(){
+
+            VnoteForm.editNote( this.model );
+        });
+
+    });
+
     // 点击空白 添加笔记
     VnoteStage.bind( 'tap', function( e ){
         
@@ -55,19 +70,9 @@ $( document ).ready(function(){
     // 点击表单的添加
     VnoteForm.bind( 'noteAdd', function( note ){
 
-        var newModel = Mnotes.create( note ),
-            noteItem  = new VIEWS[ 'noteItem' ]( {
-            model: newModel,
-            noteForm: VnoteForm
-        });
+        var newModel = Mnotes.create( note );
 
-        // 绑定编辑事件
-        noteItem.bind( 'noteTouch', function(){
-
-            VnoteForm.editNote( this.model );
-        });
-
-        VnoteStage.scrollToNote( noteItem.model );
+        VnoteStage.scrollToNote( newModel );
     });
 
     // 点击表单的保存
@@ -97,7 +102,7 @@ $( document ).ready(function(){
 
 TPL.require( [ 'noteForm', 'noteItem' ], function(){
 
-    // localStorage.clear();
+     localStorage.clear();
     // 添加stage的位置信息的保存
     app();
 });

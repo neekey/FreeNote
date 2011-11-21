@@ -25,12 +25,12 @@
             });
 
 
-            this.btnRegister.tap( function(){
+            this.btnRegister.bind( 'click', function(){
 
                 // 若表单无误
                 if( that.formValid.check() ){
 
-                    that.trigger( 'loginCheck', that.getFormData() );
+                    that.trigger( 'checkSuccess', that.getFormData() );
                 }
             });
 

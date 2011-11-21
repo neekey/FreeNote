@@ -1,5 +1,5 @@
 /**
- * ÅäÖÃÎÄ¼þ
+ * ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½
  */
 
 require( './global_module' );
@@ -7,7 +7,12 @@ require( './global_module' );
 require( './mongoConf.js');
 
 var config = {
-    error: require( './errorConfig' )
+    error: require( './errorConfig' ),
+    cookie: {
+        username: '_freenote_name',
+        serial: '_freenote_serial',
+        token: '_freenote_token'
+    }
 };
 
 /* set config to global */

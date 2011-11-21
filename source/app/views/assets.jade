@@ -1,13 +1,11 @@
-link( rel="stylesheet", type="text/css", href="/reset.css" )
-link( rel="stylesheet", type="text/css", href="/index.css" )
+// css
 - if( css ){
 -   for( i = 0; css[ i ]; i++ ){
         link( href="#{css[ i ]}", type="test/css", rel="stylesheet" )
 -   }
 - }
-// script( src="/firebug-lite/build/firebug-lite.js" )
-script( src="http://jsconsole.com/remote.js?FB6A8B0E-4031-4B3D-9487-C77C4FC85F40" )
 
+// common js
 script( src="/core/underscore.js" )
 script( src="/core/zepto.js" )
 script( src="/core/zepto_drag.js" )
@@ -15,23 +13,11 @@ script( src="/core/zepto_tap.js" )
 script( src="/core/zepto_transform.js" )
 script( src="/core/backbone.js" )
 script( src="config.js" )
-script( src="/mods/localstorage.js" )
+script( src="/mods/errorConfig.js" )
 script( src="/mods/screen.js" )
-script( src="/mods/cssTransform.js" )
-script( src="/mods/touch.js" )
-script( src="/mods/tplHandle.js" )
-script( src="/views/noteForm.js" )
-script( src="/views/noteStage.js" )
-script( src="/views/toolMenu.js" )
-script( src="/views/noteItem.js" )
-script( src="/models/user.js" )
-script( src="/models/sync.js" )
-script( src="/models/noteStage.js" )
+script( src="/mods/formValid.js" )
 
-script( src="/modelsTest.js" )
-
-
-
+// js
 - var js = js || [], css = css || [], i;
 - if( js ){
 -   for( i = 0; js[ i ]; i++ ){
@@ -39,5 +25,6 @@ script( src="/modelsTest.js" )
 -   }
 - }
 
-script( src="/index.js" )
+// script( src="/firebug-lite/build/firebug-lite.js" )
+script( src="http://jsconsole.com/remote.js?C5E45CDD-79CD-4CBA-9333-FACB330B39CC" )
 
