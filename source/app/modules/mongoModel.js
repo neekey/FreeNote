@@ -30,6 +30,13 @@ Suser = new schema({
     name: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     sessions: {},
+    //todo 拆分sync
+    // changes: [{
+    //      type,
+    //      note,
+    //      date,
+    //      noteId
+    // }]
     syncs: {},
     notes: [ Snote ],
     tags: [ Stag ]
